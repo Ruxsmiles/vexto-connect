@@ -13,6 +13,7 @@ const els = {
   forwardHeaders: $("forwardHeaders"),
   forwardCookies: $("forwardCookies"),
   cookieHint: $("cookie-hint"),
+  grantCookies: $("grantCookies"),
   minimumSizeMb: $("minimumSizeMb"),
   unknownSizeTakeover: $("unknownSizeTakeover"),
   duplicateWindowSeconds: $("duplicateWindowSeconds"),
@@ -22,6 +23,9 @@ const els = {
   test: $("test"),
   status: $("status"),
   detail: $("detail"),
+  diagRefresh: $("diag-refresh"),
+  diagClear: $("diag-clear"),
+  diagnostics: $("diagnostics"),
 };
 
 const ERROR_FIELDS = [
@@ -127,6 +131,7 @@ function refreshCookieHint() {
     els.cookieHint.textContent =
       "尚未授权全站 Cookie：保存时会请求权限；未授权时 Cookie 转发会保持关闭。";
   }
+  els.grantCookies.hidden = !els.forwardCookies.checked || cookieHostGranted;
 }
 
 async function loadCookiePermission() {
@@ -137,6 +142,42 @@ async function loadCookiePermission() {
     console.warn("检查 Cookie 权限失败：", error);
   }
   refreshCookieHint();
+}
+
+function renderDiagnostics(list) {
+  if (!Array.isArray(list) || !list.length) {
+    els.diagnostics.textContent = "暂无诊断事件。";
+    return;
+  }
+  const lines = list.map((event) => {
+    const time = new Date(event.at).toLocaleTimeString("zh-CN", { hour12: false });
+    const parts = [time, event.source || "-", event.outcome || "-"];
+    if (event.host) parts.push(event.host);
+    if (event.reason) parts.push(event.reason);
+    if (event.protocol) parts.push(`协议 ${event.protocol}`);
+    if (typeof event.count === "number") parts.push(`${event.count} 条`);
+    return parts.join(" · ");
+  });
+  els.diagnostics.textContent = lines.join("\n");
+}
+
+async function loadDiagnostics() {
+  try {
+    const stored = await chrome.storage.session.get("diagnostics");
+    renderDiagnostics(stored.diagnostics);
+  } catch (error) {
+    els.diagnostics.textContent = `读取诊断失败：${error?.message || error}`;
+  }
+}
+
+async function clearDiagnostics() {
+  try {
+    await chrome.storage.session.remove("diagnostics");
+    renderDiagnostics([]);
+    setStatus("诊断已清空。", "");
+  } catch (error) {
+    setStatus(`清空诊断失败：${error?.message || error}`, "bad");
+  }
 }
 
 async function loadSettings() {
@@ -150,6 +191,7 @@ async function loadSettings() {
     setStatus("使用默认设置（尚未保存）", "");
   }
   await loadCookiePermission();
+  void loadDiagnostics();
 }
 
 async function saveSettings() {
@@ -286,9 +328,36 @@ async function testConnection() {
       return;
     }
 
-    const protocol =
-      capabilities && Number.isInteger(capabilities.protocolVersion)
-        ? ` · 协议 v${capabilities.protocolVersion}`
+    // 4) /v1/ping：可选稳定协议；不存在时继续用兼容接口。
+    let v1 = null;
+    try {
+      const response = await vextoFetch(settings, "/v1/ping", {
+        headers: { "X-Vexto-Client": VEXTO_CLIENT },
+        timeoutMs: 1500,
+      });
+      const body = await readJson(response);
+      log(`GET /v1/ping → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`);
+      if (response.ok && body && typeof body.protocol === "number" && body.protocol >= 1) {
+        v1 = body;
+      }
+    } catch (error) {
+      log("GET /v1/ping → 网络失败");
+    }
+    if (v1) {
+      await writeProtocolMode("v1", v1.protocol);
+    } else {
+      await writeProtocolMode(
+        "compat",
+        capabilities && Number.isInteger(capabilities.protocolVersion)
+          ? capabilities.protocolVersion
+          : 3
+      );
+    }
+
+    const protocol = v1
+      ? " · 协议 v1（X-Vexto-Client）"
+      : capabilities && Number.isInteger(capabilities.protocolVersion)
+        ? ` · 兼容协议 v${capabilities.protocolVersion}`
         : "";
     if (version.engine === "running") {
       setStatus(`已连接 · Vexto ${ping.version} · 引擎就绪${protocol}`, "ok");
@@ -306,6 +375,21 @@ async function testConnection() {
 els.save.addEventListener("click", () => void saveSettings());
 els.test.addEventListener("click", () => void testConnection());
 els.forwardCookies.addEventListener("change", refreshCookieHint);
+els.diagRefresh.addEventListener("click", () => void loadDiagnostics());
+els.diagClear.addEventListener("click", () => void clearDiagnostics());
+els.grantCookies.addEventListener("click", async () => {
+  try {
+    cookieHostGranted = await chrome.permissions.request({ origins: COOKIE_ORIGINS });
+  } catch (error) {
+    cookieHostGranted = false;
+    console.warn("请求 Cookie 权限失败：", error);
+  }
+  refreshCookieHint();
+  setStatus(
+    cookieHostGranted ? "已授权全站 Cookie。" : "未获得全站 Cookie 权限。",
+    cookieHostGranted ? "ok" : "warn"
+  );
+});
 
 for (const field of ERROR_FIELDS) {
   els[field].addEventListener("input", () => clearFieldError(field));

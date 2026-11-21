@@ -1,6 +1,6 @@
 # Vexto Connect
 
-Vexto 的浏览器接管扩展。当前处于 **M3**：设置、连接测试、右键交接、自动接管、可选转发与过滤规则均已实现；诊断与打包留到 M4。
+Vexto 的浏览器接管扩展。当前处于 **M4**：设置、连接测试、右键交接、自动接管、可选转发与过滤、诊断、协议协商与打包均已实现。
 
 技术选型：Manifest V3 + 纯静态 HTML/CSS/JS，无 npm、无构建链。
 
@@ -19,7 +19,7 @@ vexto-connect/
 └── LICENSE           GPL-3.0
 ```
 
-## 已实现（M1 + M2 + M3）
+## 已实现（M1 + M2 + M3 + M4）
 
 - 选项页读取、校验、保存 `enabled` / `host` / `port` / `secret` / `autoTakeover` / 转发与过滤设置到 `chrome.storage.local`；
 - 「测试连接」调用 `GET /ping`、`GET /version`，并额外读一次 `GET /downloads/capabilities`——Vexto 对前两者免鉴权，401 只能由后者暴露；
@@ -28,12 +28,15 @@ vexto-connect/
 - 自动接管（默认关闭）：浏览器下载先暂停，1 秒内交给 Vexto；accepted → 取消并清除浏览器下载，失败 / 超时 → 恢复浏览器下载；
 - 可选转发：Referer / User-Agent（默认开）、Cookie（默认关，首次开启时申请可选的全站 Cookie 权限）；
 - 过滤（仅自动接管）：站点允许 / 排除（域名后缀匹配）、最小文件大小与未知大小策略、重复保护窗口；
-- 使用 `downloads.onCreated` 而不是 `onDeterminingFilename`：Edge 158 实测后者在 worker 被回收后不会唤醒它，会漏接管；`onCreated` 能可靠唤醒 worker。
+- 使用 `downloads.onCreated` 而不是 `onDeterminingFilename`：Edge 158 实测后者在 worker 被回收后不会唤醒它，会漏接管；`onCreated` 能可靠唤醒 worker；
+- 诊断：最近 50 条交接结果，选项页查看 / 清空；只记录主机与原因码，不记录 URL 查询串、Cookie 或密钥；
+- 协议协商：探测 `/v1/ping`，可用时走 `/v1/add`（`X-Vexto-Client`），404 自动回落兼容 `/add`；测试连接显示当前协议；
+- 点击失败通知会打开选项页；Cookie 权限缺失时选项页提供「授权全站 Cookie」按钮。
 
 ## 后续实现范围
 
-1. 诊断事件、版本协商、打包与发布说明（M4）。
-2. Vexto 侧 `/v1/*` 稳定协议（当前复用 `/ping`、`/version`、`/downloads/capabilities`、`/add` 兼容接口）。
+1. Vexto 侧 `/v1/*` 稳定协议落地后，客户端会自动从兼容接口切到 `/v1`。
+2. 浏览器商店发布材料与可选权限说明。
 
 ## 加载（开发）
 
@@ -53,6 +56,14 @@ vexto-connect/
 ## 开发文档
 
 完整设计、协议、状态机与测试计划见 `docs/DEVELOPMENT.md`（软链接到 `vexto_docs/vexto-connect_docs`）。
+
+## 打包（自用）
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/package.ps1
+```
+
+生成 `dist/vexto-connect-<version>.zip`，包含 manifest、脚本、选项页、图标、README、LICENSE；不包含 `docs/`、`.git` 或测试文件。
 
 ## 许可
 

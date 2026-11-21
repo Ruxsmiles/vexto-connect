@@ -27,6 +27,13 @@ const SITE_RULE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*
 const LOOPBACK_HOSTS = Object.freeze(["127.0.0.1", "localhost"]);
 const CLIENT_HEADER = "X-Rayburst-Client";
 const CLIENT_VALUE = "rayburst-connect";
+const VEXTO_CLIENT_VERSION =
+  typeof chrome !== "undefined" && chrome.runtime?.getManifest
+    ? chrome.runtime.getManifest().version
+    : "0.4.0";
+const VEXTO_CLIENT = `connect/${VEXTO_CLIENT_VERSION}`;
+const PROTOCOL_MODE_KEY = "protocolMode";
+const PROTOCOL_MODE_TTL_MS = 5 * 60 * 1000;
 const PROBE_TIMEOUT_MS = 3000;
 const ADD_TIMEOUT_MS = 5000;
 
@@ -196,6 +203,13 @@ function vextoHeaders(settings, withJson = false) {
   return headers;
 }
 
+function v1Headers(settings, withJson = false) {
+  const headers = { "X-Vexto-Client": VEXTO_CLIENT };
+  if (withJson) headers["Content-Type"] = "application/json";
+  if (settings.secret) headers.Authorization = `Bearer ${settings.secret}`;
+  return headers;
+}
+
 async function vextoFetch(settings, path, options = {}) {
   const { method = "GET", headers = {}, body, timeoutMs = PROBE_TIMEOUT_MS } = options;
   const controller = new AbortController();
@@ -222,6 +236,43 @@ async function readJson(response) {
   }
 }
 
+// 协议模式缓存：有 /v1 时优先，否则回落兼容接口。缓存 5 分钟。
+async function readProtocolMode() {
+  try {
+    const stored = await chrome.storage.session.get(PROTOCOL_MODE_KEY);
+    const mode = stored[PROTOCOL_MODE_KEY];
+    if (mode && Date.now() - mode.at < PROTOCOL_MODE_TTL_MS) return mode;
+  } catch {
+    // 没有缓存就按兼容接口
+  }
+  return null;
+}
+
+async function writeProtocolMode(mode, protocol) {
+  const entry = { mode, protocol, at: Date.now() };
+  try {
+    await chrome.storage.session.set({ [PROTOCOL_MODE_KEY]: entry });
+  } catch {
+    // 缓存失败不影响交接
+  }
+  return entry;
+}
+
+async function detectV1(settings, timeoutMs = 1500) {
+  try {
+    const response = await vextoFetch(settings, "/v1/ping", {
+      headers: { "X-Vexto-Client": VEXTO_CLIENT },
+      timeoutMs,
+    });
+    if (!response.ok) return null;
+    const body = await readJson(response);
+    if (body && typeof body.protocol === "number" && body.protocol >= 1) return body;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function describeNetworkError(error, settings, timeoutMs = PROBE_TIMEOUT_MS) {
   const target = `${settings.host}:${settings.port}`;
   if (error && error.name === "AbortError") {
@@ -241,6 +292,8 @@ function describeHttpError(status) {
       return "请求被拒绝（403）：Vexto 不接受该请求来源或客户端标识。";
     case 404:
       return "接口不存在（404）：端口上的服务可能不是 Vexto，或 Vexto 版本过旧。";
+    case 426:
+      return "协议不兼容（426）：请升级 Vexto 或扩展。";
     default:
       return `Vexto 返回 HTTP ${status}。`;
   }

@@ -21,11 +21,29 @@ const RECENT_KEY = "recentHandoffs";
 const NOTIFY_THROTTLE_MS = 30000;
 const HANDLED_TTL_MS = 10 * 60 * 1000;
 const SELF_URL_TTL_MS = 15000;
+const DIAG_KEY = "diagnostics";
+const DIAG_LIMIT = 50;
 
 let menuGeneration = 0;
 const handledTakeovers = new Map();
 const lastNotifyAt = new Map();
 const selfInitiatedUrls = new Map();
+let diagQueue = Promise.resolve();
+let badgeGeneration = 0;
+
+// 诊断只记录主机、结果和原因码；不记录 URL 查询串、Cookie、密钥。
+function addDiagnostic(event) {
+  diagQueue = diagQueue
+    .then(() => appendDiagnostic(event))
+    .catch((error) => console.warn("记录诊断失败：", error));
+}
+
+async function appendDiagnostic(event) {
+  const stored = await chrome.storage.session.get(DIAG_KEY);
+  const list = Array.isArray(stored[DIAG_KEY]) ? stored[DIAG_KEY] : [];
+  list.push({ at: Date.now(), ...event });
+  await chrome.storage.session.set({ [DIAG_KEY]: list.slice(-DIAG_LIMIT) });
+}
 
 // ── 设置缓存 ────────────────────────────────────────────────────────────
 // 菜单和手动交接都从这里读，storage.onChanged 负责更新。
@@ -48,6 +66,36 @@ const settingsReady = chrome.storage.local
 async function loadSettings() {
   if (settingsCache) return settingsCache;
   return settingsReady;
+}
+
+void settingsReady.then((settings) => refreshProtocolMode(settings));
+
+async function refreshProtocolMode(settings) {
+  const cached = await readProtocolMode();
+  if (cached) return;
+  const v1 = await detectV1(settings);
+  await writeProtocolMode(v1 ? "v1" : "compat", v1?.protocol || 3);
+}
+
+async function sendAdd(settings, payload, timeoutMs) {
+  const cached = await readProtocolMode();
+  if (cached && cached.mode === "v1") {
+    const response = await vextoFetch(settings, "/v1/add", {
+      method: "POST",
+      headers: v1Headers(settings, true),
+      body: JSON.stringify(payload),
+      timeoutMs,
+    });
+    if (response.status !== 404) return { response, mode: "v1" };
+    await writeProtocolMode("compat", 3);
+  }
+  const response = await vextoFetch(settings, "/add", {
+    method: "POST",
+    headers: vextoHeaders(settings, true),
+    body: JSON.stringify(payload),
+    timeoutMs,
+  });
+  return { response, mode: "compat" };
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -80,6 +128,10 @@ void refreshMenu();
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId !== MENU_ID) return;
   void handoffLink(info.linkUrl || "", tab?.url || "");
+});
+
+chrome.notifications.onClicked.addListener(() => {
+  void chrome.runtime.openOptionsPage();
 });
 
 // ── 手动交接（M1）──────────────────────────────────────────────────────
@@ -125,35 +177,49 @@ async function handoffLink(linkUrl, referer) {
     if (cookie) payload.cookie = cookie;
   }
 
-  let response;
+  const host = hostnameOf(linkUrl);
+  let result;
   try {
-    response = await vextoFetch(settings, "/add", {
-      method: "POST",
-      headers: vextoHeaders(settings, true),
-      body: JSON.stringify(payload),
-      timeoutMs: ADD_TIMEOUT_MS,
-    });
+    result = await sendAdd(settings, payload, ADD_TIMEOUT_MS);
   } catch (error) {
+    addDiagnostic({ source: "manual", outcome: "error", host, reason: "network" });
     const reason = describeNetworkError(error, settings, ADD_TIMEOUT_MS);
     await reportFailure("Vexto 未响应", reason, linkUrl);
     return;
   }
+  const { response, mode } = result;
 
   if (response.status === 401) {
+    addDiagnostic({ source: "manual", outcome: "error", host, reason: "401", protocol: mode });
     await reportFailure("密钥不一致", describeHttpError(401), linkUrl);
     return;
   }
   if (!response.ok) {
+    addDiagnostic({
+      source: "manual",
+      outcome: "error",
+      host,
+      reason: `http-${response.status}`,
+      protocol: mode,
+    });
     await reportFailure(`Vexto 返回 HTTP ${response.status}`, describeHttpError(response.status), linkUrl);
     return;
   }
 
   const data = await readJson(response);
   if (data && data.action === "accepted") {
+    addDiagnostic({ source: "manual", outcome: "accepted", host, protocol: mode });
     await reportSuccess();
     return;
   }
 
+  addDiagnostic({
+    source: "manual",
+    outcome: "fallback",
+    host,
+    protocol: mode,
+    reason: data?.reason || "unknown",
+  });
   const reason =
     data && data.reason === "rejected"
       ? "Vexto 拒绝接收：下载工具未启用，或该链接类型不受支持。"
@@ -225,38 +291,56 @@ chrome.downloads.onCreated.addListener((item) => {
   void maybeTakeOver(item);
 });
 
-function shouldAutoTakeOver(item, settings) {
-  if (!settings.enabled || !settings.autoTakeover) return false;
-  if (!/^https?:\/\//i.test(item.url || "")) return false;
+function autoTakeOverDecision(item, settings) {
+  if (!settings.enabled || !settings.autoTakeover) return "disabled";
+  if (!/^https?:\/\//i.test(item.url || "")) return "non-http";
   // 扩展自己发起的下载（例如右键失败后的回落）不再接管，避免循环
-  if (item.byExtensionId || isSelfDownload(item.url)) return false;
-  if (item.state !== "in_progress" && item.state !== "complete") return false;
+  if (item.byExtensionId || isSelfDownload(item.url)) return "self";
+  if (item.state !== "in_progress" && item.state !== "complete") return "state";
 
   const hostname = hostnameOf(item.url);
-  if (!hostname) return false;
-  if (settings.siteRules.block.some((rule) => matchesSiteRule(hostname, rule))) return false;
+  if (!hostname) return "invalid-url";
+  if (settings.siteRules.block.some((rule) => matchesSiteRule(hostname, rule))) return "site-block";
   if (
     settings.siteRules.allow.length &&
     !settings.siteRules.allow.some((rule) => matchesSiteRule(hostname, rule))
   ) {
-    return false;
+    return "site-allow";
   }
 
   if (settings.minimumSizeMb > 0) {
     const minBytes = settings.minimumSizeMb * 1024 * 1024;
     if (item.fileSize > 0) {
-      if (item.fileSize < minBytes) return false;
+      if (item.fileSize < minBytes) return "size";
     } else if (!settings.unknownSizeTakeover) {
-      return false;
+      return "size-unknown";
     }
   }
-  return true;
+  return null;
+}
+
+const DIAG_SKIP_REASONS = new Set(["site-block", "site-allow", "size", "size-unknown"]);
+
+function shouldAutoTakeOver(item, settings) {
+  return autoTakeOverDecision(item, settings) === null;
 }
 
 async function maybeTakeOver(item) {
   if (wasHandled(item.id)) return;
   const settings = await loadSettings();
-  if (!shouldAutoTakeOver(item, settings)) return;
+
+  const decision = autoTakeOverDecision(item, settings);
+  if (decision) {
+    if (DIAG_SKIP_REASONS.has(decision)) {
+      addDiagnostic({
+        source: "auto",
+        outcome: "skipped",
+        host: hostnameOf(item.url),
+        reason: decision,
+      });
+    }
+    return;
+  }
 
   // onCreated 时 byExtensionId 可能还没写入，稍等再读一次
   await new Promise((resolve) => setTimeout(resolve, 50));
@@ -266,9 +350,28 @@ async function maybeTakeOver(item) {
   } catch {
     fresh = null;
   }
-  if (!fresh || !shouldAutoTakeOver(fresh, settings)) return;
+  if (!fresh) return;
+
+  const freshDecision = autoTakeOverDecision(fresh, settings);
+  if (freshDecision) {
+    if (DIAG_SKIP_REASONS.has(freshDecision)) {
+      addDiagnostic({
+        source: "auto",
+        outcome: "skipped",
+        host: hostnameOf(fresh.url),
+        reason: freshDecision,
+      });
+    }
+    return;
+  }
 
   if (await isDuplicateHandoff(fresh, settings)) {
+    addDiagnostic({
+      source: "auto",
+      outcome: "skipped",
+      host: hostnameOf(fresh.url),
+      reason: "duplicate",
+    });
     console.info("Vexto Connect：重复下载，跳过接管");
     return;
   }
@@ -357,6 +460,7 @@ async function cookieHeaderFor(url) {
     cookies.sort((a, b) => (b.path?.length || 0) - (a.path?.length || 0));
     return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
   } catch (error) {
+    addDiagnostic({ outcome: "cookie-error", reason: "read-failed" });
     console.warn("读取 Cookie 失败：", error?.message || error);
     return "";
   }
@@ -364,6 +468,7 @@ async function cookieHeaderFor(url) {
 
 async function beginTakeover(item, settings) {
   markHandled(item.id);
+  const host = hostnameOf(item.finalUrl || item.url);
 
   let settled = false;
   // 安全网：任何路径卡住都必须在 deadline 后恢复浏览器下载
@@ -377,16 +482,12 @@ async function beginTakeover(item, settings) {
       void chrome.runtime.lastError;
     });
 
-    let response;
+    let result;
     try {
       const payload = await takeoverPayload(item, settings);
-      response = await vextoFetch(settings, "/add", {
-        method: "POST",
-        headers: vextoHeaders(settings, true),
-        body: JSON.stringify(payload),
-        timeoutMs: TAKEOVER_DEADLINE_MS,
-      });
+      result = await sendAdd(settings, payload, TAKEOVER_DEADLINE_MS);
     } catch (error) {
+      addDiagnostic({ source: "auto", outcome: "error", host, reason: "network" });
       const reason = describeNetworkError(error, settings, TAKEOVER_DEADLINE_MS);
       await clearPending(item.id);
       settled = true;
@@ -394,8 +495,10 @@ async function beginTakeover(item, settings) {
       await reportTakeoverFailure("Vexto 未响应，已恢复浏览器下载", reason);
       return;
     }
+    const { response, mode } = result;
 
     if (response.status === 401) {
+      addDiagnostic({ source: "auto", outcome: "error", host, reason: "401", protocol: mode });
       await clearPending(item.id);
       settled = true;
       resumeDownload(item.id);
@@ -403,6 +506,13 @@ async function beginTakeover(item, settings) {
       return;
     }
     if (!response.ok) {
+      addDiagnostic({
+        source: "auto",
+        outcome: "error",
+        host,
+        reason: `http-${response.status}`,
+        protocol: mode,
+      });
       await clearPending(item.id);
       settled = true;
       resumeDownload(item.id);
@@ -415,6 +525,7 @@ async function beginTakeover(item, settings) {
 
     const data = await readJson(response);
     if (data && data.action === "accepted") {
+      addDiagnostic({ source: "auto", outcome: "accepted", host, protocol: mode });
       await clearPending(item.id);
       settled = true;
       await removeBrowserDownload(item.id);
@@ -422,6 +533,13 @@ async function beginTakeover(item, settings) {
       return;
     }
 
+    addDiagnostic({
+      source: "auto",
+      outcome: "fallback",
+      host,
+      protocol: mode,
+      reason: data?.reason || "unknown",
+    });
     const reason =
       data && data.reason === "rejected"
         ? "Vexto 拒绝接收（下载工具未启用或链接类型不支持）。"
@@ -431,6 +549,7 @@ async function beginTakeover(item, settings) {
     resumeDownload(item.id);
     await reportTakeoverFailure("已恢复浏览器下载", reason);
   } catch (error) {
+    addDiagnostic({ source: "auto", outcome: "error", host, reason: "exception" });
     console.warn("自动接管出错，恢复浏览器下载：", error);
     await clearPending(item.id).catch(() => {});
     settled = true;
@@ -540,6 +659,7 @@ async function recoverPendingTakeovers() {
     }
   }
   await chrome.storage.session.remove(PENDING_KEY);
+  addDiagnostic({ source: "auto", outcome: "recovered", count: ids.length });
   console.warn(`Vexto Connect：恢复了 ${ids.length} 条未完成的交接记录`);
 }
 
@@ -565,7 +685,11 @@ function notify(title, message) {
 }
 
 function clearBadgeSoon() {
+  const generation = ++badgeGeneration;
   setTimeout(() => {
-    void chrome.action.setBadgeText({ text: "" });
+    // 只清除本次设置的状态，避免旧定时器抹掉新交接的 badge
+    if (generation === badgeGeneration) {
+      void chrome.action.setBadgeText({ text: "" });
+    }
   }, 3000);
 }
