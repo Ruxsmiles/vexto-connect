@@ -154,6 +154,7 @@ function renderDiagnostics(list) {
     const parts = [time, event.source || "-", event.outcome || "-"];
     if (event.host) parts.push(event.host);
     if (event.reason) parts.push(event.reason);
+    if (event.browser) parts.push(event.browser);
     if (event.protocol) parts.push(`协议 ${event.protocol}`);
     if (typeof event.count === "number") parts.push(`${event.count} 条`);
     return parts.join(" · ");

@@ -342,7 +342,10 @@ async function maybeTakeOver(item) {
     return;
   }
 
-  // onCreated 时 byExtensionId 可能还没写入，稍等再读一次
+  // 先暂停，尽量在写入数据前停住；50ms 后再复查 byExtensionId
+  chrome.downloads.pause(item.id, () => {
+    void chrome.runtime.lastError;
+  });
   await new Promise((resolve) => setTimeout(resolve, 50));
   let fresh = item;
   try {
@@ -354,6 +357,7 @@ async function maybeTakeOver(item) {
 
   const freshDecision = autoTakeOverDecision(fresh, settings);
   if (freshDecision) {
+    resumeDownload(item.id);
     if (DIAG_SKIP_REASONS.has(freshDecision)) {
       addDiagnostic({
         source: "auto",
@@ -366,6 +370,7 @@ async function maybeTakeOver(item) {
   }
 
   if (await isDuplicateHandoff(fresh, settings)) {
+    resumeDownload(item.id);
     addDiagnostic({
       source: "auto",
       outcome: "skipped",
@@ -525,11 +530,25 @@ async function beginTakeover(item, settings) {
 
     const data = await readJson(response);
     if (data && data.action === "accepted") {
-      addDiagnostic({ source: "auto", outcome: "accepted", host, protocol: mode });
       await clearPending(item.id);
       settled = true;
-      await removeBrowserDownload(item.id);
-      await reportTakeoverSuccess();
+      const removal = await removeBrowserDownload(item.id);
+      addDiagnostic({
+        source: "auto",
+        outcome: "accepted",
+        host,
+        protocol: mode,
+        browser: removal.action,
+      });
+      if (removal.ok) {
+        await reportTakeoverSuccess();
+      } else {
+        await reportTakeoverPartial(
+          "已交给 Vexto，但浏览器下载未取消",
+          removal.error || removal.action,
+          removal.filename
+        );
+      }
       return;
     }
 
@@ -567,21 +586,36 @@ function resumeDownload(id) {
 }
 
 async function removeBrowserDownload(id) {
+  let item = null;
   try {
-    const [item] = await chrome.downloads.search({ id });
-    if (item && item.state === "complete") {
+    [item] = await chrome.downloads.search({ id });
+  } catch (error) {
+    return { ok: false, action: "search-failed", error: error?.message || String(error) };
+  }
+  if (!item) return { ok: true, action: "already-gone" };
+
+  const wasComplete = item.state === "complete";
+  try {
+    if (wasComplete) {
       await chrome.downloads.removeFile(id);
     } else {
       await chrome.downloads.cancel(id);
     }
   } catch (error) {
-    void error;
+    return {
+      ok: false,
+      action: wasComplete ? "remove-failed" : "cancel-failed",
+      error: error?.message || String(error),
+      filename: item.filename,
+    };
   }
+
   try {
     await chrome.downloads.erase({ id });
   } catch (error) {
-    void error;
+    console.warn("清除下载记录失败：", error?.message || error);
   }
+  return { ok: true, action: wasComplete ? "removed" : "canceled", filename: item.filename };
 }
 
 async function reportTakeoverSuccess() {
@@ -592,6 +626,20 @@ async function reportTakeoverSuccess() {
   } catch (error) {
     console.warn("显示接管成功状态失败：", error);
   }
+  clearBadgeSoon();
+}
+
+async function reportTakeoverPartial(headline, reason, filename) {
+  console.warn(`Vexto Connect：${headline}。${reason}`);
+  try {
+    await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
+    await chrome.action.setBadgeText({ text: BADGE_ERR });
+    await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
+  } catch (error) {
+    console.warn("显示接管失败状态失败：", error);
+  }
+  const fileNote = filename ? `文件：${filename}` : "";
+  notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, `${reason}${fileNote ? `。${fileNote}` : ""}`);
   clearBadgeSoon();
 }
 
