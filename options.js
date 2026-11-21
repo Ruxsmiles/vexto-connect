@@ -1,8 +1,234 @@
-// Vexto Connect 选项页 —— 项目骨架，暂未实现。
-//
-// TODO（后续实现，不在本轮范围）：
-// - 读取 / 保存 chrome.storage.local
-// - 测试连接（Vexto /ping、/version）
-// - 端口 / 密钥校验与错误提示
+// Vexto Connect 选项页：读取 / 校验 / 保存设置，测试与 Vexto 的连接。
 
-console.info("Vexto Connect options skeleton");
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+
+const els = {
+  enabled: $("enabled"),
+  host: $("host"),
+  port: $("port"),
+  secret: $("secret"),
+  save: $("save"),
+  test: $("test"),
+  status: $("status"),
+  detail: $("detail"),
+};
+
+let busy = false;
+
+function readForm() {
+  return {
+    enabled: els.enabled.checked,
+    host: els.host.value,
+    port: els.port.value,
+    secret: els.secret.value,
+  };
+}
+
+function render(settings) {
+  els.enabled.checked = settings.enabled;
+  els.host.value = settings.host;
+  els.port.value = String(settings.port);
+  els.secret.value = settings.secret;
+}
+
+function setStatus(text, kind = "") {
+  els.status.textContent = text;
+  els.status.className = `status ${kind}`.trim();
+}
+
+function setDetail(lines) {
+  if (!lines.length) {
+    els.detail.textContent = "";
+    els.detail.classList.add("hidden");
+    return;
+  }
+  els.detail.textContent = lines.join("\n");
+  els.detail.classList.remove("hidden");
+}
+
+function setBusy(value) {
+  busy = value;
+  els.save.disabled = value;
+  els.test.disabled = value;
+  els.test.textContent = value ? "测试中…" : "测试连接";
+}
+
+function showFieldErrors(errors) {
+  for (const field of ["host", "port"]) {
+    const input = els[field];
+    const errorEl = $(`${field}-error`);
+    const message = errors[field];
+    if (message) {
+      input.classList.add("invalid");
+      input.setAttribute("aria-invalid", "true");
+      errorEl.textContent = message;
+      errorEl.hidden = false;
+    } else {
+      input.classList.remove("invalid");
+      input.removeAttribute("aria-invalid");
+      errorEl.textContent = "";
+      errorEl.hidden = true;
+    }
+  }
+}
+
+async function loadSettings() {
+  const stored = await chrome.storage.local.get("settings");
+  if (stored.settings) {
+    const settings = normalizeSettings(stored.settings);
+    render(settings);
+    setStatus(`已读取设置 · ${settings.host}:${settings.port}`, "");
+  } else {
+    render(DEFAULT_SETTINGS);
+    setStatus("使用默认设置（尚未保存）", "");
+  }
+}
+
+async function saveSettings() {
+  if (busy) return;
+  const { ok, errors, settings } = validateSettings(readForm());
+  showFieldErrors(errors);
+  if (!ok) {
+    setStatus("设置未保存：请修正标红的字段。", "bad");
+    return;
+  }
+  try {
+    await chrome.storage.local.set({ settings });
+    const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+    setStatus(`已保存 · ${settings.host}:${settings.port} · ${time}`, "ok");
+  } catch (error) {
+    setStatus(`保存失败：${error?.message || error}`, "bad");
+  }
+}
+
+async function testConnection() {
+  if (busy) return;
+  const { ok, errors, settings } = validateSettings(readForm());
+  showFieldErrors(errors);
+  if (!ok) {
+    setStatus("无法测试：请先修正标红的字段。", "bad");
+    setDetail([]);
+    return;
+  }
+
+  const lines = [];
+  const log = (line) => {
+    lines.push(line);
+    setDetail(lines);
+  };
+
+  setBusy(true);
+  setStatus("正在连接 Vexto…", "");
+  setDetail([]);
+
+  try {
+    // 1) /ping：产品发现，Vexto 侧不校验鉴权。
+    let ping;
+    try {
+      const response = await vextoFetch(settings, "/ping");
+      const body = await readJson(response);
+      log(`GET /ping → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`);
+      if (!response.ok) {
+        setStatus(describeHttpError(response.status), "bad");
+        return;
+      }
+      if (!body || typeof body.version !== "string") {
+        setStatus("端口上的服务不是 Vexto：/ping 响应缺少版本字段。", "bad");
+        return;
+      }
+      ping = body;
+    } catch (error) {
+      log("GET /ping → 网络失败");
+      setStatus(describeNetworkError(error, settings), "bad");
+      return;
+    }
+
+    // 2) /version：引擎就绪探针，同样不校验鉴权。
+    let version;
+    try {
+      const response = await vextoFetch(settings, "/version");
+      const body = await readJson(response);
+      log(`GET /version → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`);
+      if (!response.ok) {
+        setStatus(describeHttpError(response.status), "bad");
+        return;
+      }
+      if (!body || typeof body.engine !== "string") {
+        setStatus("Vexto 的 /version 响应无法识别。", "bad");
+        return;
+      }
+      version = body;
+    } catch (error) {
+      log("GET /version → 网络失败");
+      setStatus(describeNetworkError(error, settings), "bad");
+      return;
+    }
+
+    // 3) 鉴权探测：Vexto 对 /ping 与 /version 免鉴权，401 只能在需要密钥的
+    //    接口上暴露，所以额外读一次 /downloads/capabilities。
+    let capabilities = null;
+    try {
+      const response = await vextoFetch(settings, "/downloads/capabilities", {
+        headers: vextoHeaders(settings),
+      });
+      const body = await readJson(response);
+      log(
+        `GET /downloads/capabilities → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`
+      );
+      if (response.status === 401) {
+        setStatus(`已连接 Vexto ${ping.version}，但${describeHttpError(401)}`, "bad");
+        return;
+      }
+      if (!response.ok) {
+        setStatus(describeHttpError(response.status), "bad");
+        return;
+      }
+      capabilities = body;
+    } catch (error) {
+      log("GET /downloads/capabilities → 网络失败");
+      setStatus(describeNetworkError(error, settings), "bad");
+      return;
+    }
+
+    const protocol =
+      capabilities && Number.isInteger(capabilities.protocolVersion)
+        ? ` · 协议 v${capabilities.protocolVersion}`
+        : "";
+    if (version.engine === "running") {
+      setStatus(`已连接 · Vexto ${ping.version} · 引擎就绪${protocol}`, "ok");
+    } else {
+      setStatus(
+        `已连接 · Vexto ${ping.version} · 引擎未启用（${version.engine}）：交接会回落到浏览器下载${protocol}`,
+        "warn"
+      );
+    }
+  } finally {
+    setBusy(false);
+  }
+}
+
+els.save.addEventListener("click", () => void saveSettings());
+els.test.addEventListener("click", () => void testConnection());
+
+for (const field of ["host", "port"]) {
+  els[field].addEventListener("input", () => {
+    els[field].classList.remove("invalid");
+    els[field].removeAttribute("aria-invalid");
+    const errorEl = $(`${field}-error`);
+    errorEl.textContent = "";
+    errorEl.hidden = true;
+  });
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.isComposing) {
+    event.preventDefault();
+    void saveSettings();
+  }
+});
+
+loadSettings().catch((error) => {
+  setStatus(`读取设置失败：${error?.message || error}`, "bad");
+});
