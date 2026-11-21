@@ -10,3 +10,6 @@ dist/
 Thumbs.db
 .vscode/
 .idea/
+
+# 文档通过 junction 指向 vexto_docs，不入本仓库
+docs/

@@ -39,6 +39,10 @@ vexto-connect/
 - 不注册 native messaging；Vexto 必须在托盘运行。
 - Cookie 转发默认关闭，按敏感数据处理。
 
+## 开发文档
+
+完整设计、协议、状态机与测试计划见 `docs/DEVELOPMENT.md`（软链接到 `vexto_docs/vexto-connect_docs`）。
+
 ## 许可
 
 GNU GPL-3.0，与 Vexto 主项目一致。
