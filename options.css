@@ -126,6 +126,48 @@ input.invalid:focus {
 
 .field-error[hidden] { display: none; }
 
+.field-error.wide { margin-left: 0; }
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.label-wide { color: var(--muted); }
+
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.field .label-wide {
+  display: block;
+  margin-bottom: 6px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--input);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+textarea.invalid { border-color: var(--danger); }
+
 .hint {
   margin: 8px 0 0;
   color: var(--muted);

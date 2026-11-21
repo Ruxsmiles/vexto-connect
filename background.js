@@ -17,6 +17,7 @@ const BADGE_COLOR_OK = "#45c98a";
 const BADGE_COLOR_ERR = "#f0566d";
 const TAKEOVER_DEADLINE_MS = 1000;
 const PENDING_KEY = "pendingTakeovers";
+const RECENT_KEY = "recentHandoffs";
 const NOTIFY_THROTTLE_MS = 30000;
 const HANDLED_TTL_MS = 10 * 60 * 1000;
 const SELF_URL_TTL_MS = 15000;
@@ -112,10 +113,17 @@ async function handoffLink(linkUrl, referer) {
     return;
   }
 
-  const payload = { url: linkUrl, ack: "early", userAgent: navigator.userAgent };
-  if (referer) payload.referer = referer;
+  const payload = { url: linkUrl, ack: "early" };
+  if (settings.forwardHeaders) {
+    if (referer) payload.referer = referer;
+    payload.userAgent = navigator.userAgent;
+  }
   const filename = filenameFromUrl(linkUrl);
   if (filename) payload.filename = filename;
+  if (settings.forwardCookies) {
+    const cookie = await cookieHeaderFor(linkUrl);
+    if (cookie) payload.cookie = cookie;
+  }
 
   let response;
   try {
@@ -223,6 +231,25 @@ function shouldAutoTakeOver(item, settings) {
   // 扩展自己发起的下载（例如右键失败后的回落）不再接管，避免循环
   if (item.byExtensionId || isSelfDownload(item.url)) return false;
   if (item.state !== "in_progress" && item.state !== "complete") return false;
+
+  const hostname = hostnameOf(item.url);
+  if (!hostname) return false;
+  if (settings.siteRules.block.some((rule) => matchesSiteRule(hostname, rule))) return false;
+  if (
+    settings.siteRules.allow.length &&
+    !settings.siteRules.allow.some((rule) => matchesSiteRule(hostname, rule))
+  ) {
+    return false;
+  }
+
+  if (settings.minimumSizeMb > 0) {
+    const minBytes = settings.minimumSizeMb * 1024 * 1024;
+    if (item.fileSize > 0) {
+      if (item.fileSize < minBytes) return false;
+    } else if (!settings.unknownSizeTakeover) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -240,6 +267,12 @@ async function maybeTakeOver(item) {
     fresh = null;
   }
   if (!fresh || !shouldAutoTakeOver(fresh, settings)) return;
+
+  if (await isDuplicateHandoff(fresh, settings)) {
+    console.info("Vexto Connect：重复下载，跳过接管");
+    return;
+  }
+  await rememberHandoff(fresh, settings);
   await beginTakeover(fresh, settings);
 }
 
@@ -263,18 +296,70 @@ function markHandled(id) {
   }
 }
 
-function takeoverPayload(item) {
-  const payload = {
-    url: item.finalUrl || item.url,
-    ack: "early",
-    userAgent: navigator.userAgent,
-  };
-  if (item.referrer) payload.referer = item.referrer;
+async function takeoverPayload(item, settings) {
+  const url = item.finalUrl || item.url;
+  const payload = { url, ack: "early" };
+  if (settings.forwardHeaders) {
+    if (item.referrer) payload.referer = item.referrer;
+    payload.userAgent = navigator.userAgent;
+  }
   // onCreated 阶段浏览器可能还没确定文件名，用 URL 最后一段兜底
-  const filename = item.filename || filenameFromUrl(item.finalUrl || item.url);
+  const filename = item.filename || filenameFromUrl(url);
   if (filename) payload.filename = filename;
   if (Number.isFinite(item.fileSize) && item.fileSize > 0) payload.size = item.fileSize;
+  if (settings.forwardCookies) {
+    const cookie = await cookieHeaderFor(url);
+    if (cookie) payload.cookie = cookie;
+  }
   return payload;
+}
+
+async function handoffKey(item) {
+  const url = item.finalUrl || item.url;
+  const filename = item.filename || filenameFromUrl(url);
+  return `${url}|${filename}`;
+}
+
+async function isDuplicateHandoff(item, settings) {
+  if (!(settings.duplicateWindowSeconds > 0)) return false;
+  try {
+    const key = await handoffKey(item);
+    const stored = await chrome.storage.session.get(RECENT_KEY);
+    const map = stored[RECENT_KEY] || {};
+    const at = map[key];
+    return Boolean(at) && Date.now() - at < settings.duplicateWindowSeconds * 1000;
+  } catch (error) {
+    console.warn("检查重复下载失败：", error);
+    return false;
+  }
+}
+
+async function rememberHandoff(item, settings) {
+  if (!(settings.duplicateWindowSeconds > 0)) return;
+  try {
+    const key = await handoffKey(item);
+    const stored = await chrome.storage.session.get(RECENT_KEY);
+    const map = stored[RECENT_KEY] || {};
+    const cutoff = Date.now() - settings.duplicateWindowSeconds * 1000;
+    for (const [k, at] of Object.entries(map)) {
+      if (at < cutoff) delete map[k];
+    }
+    map[key] = Date.now();
+    await chrome.storage.session.set({ [RECENT_KEY]: map });
+  } catch (error) {
+    console.warn("记录重复下载失败：", error);
+  }
+}
+
+async function cookieHeaderFor(url) {
+  try {
+    const cookies = await chrome.cookies.getAll({ url });
+    cookies.sort((a, b) => (b.path?.length || 0) - (a.path?.length || 0));
+    return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
+  } catch (error) {
+    console.warn("读取 Cookie 失败：", error?.message || error);
+    return "";
+  }
 }
 
 async function beginTakeover(item, settings) {
@@ -294,10 +379,11 @@ async function beginTakeover(item, settings) {
 
     let response;
     try {
+      const payload = await takeoverPayload(item, settings);
       response = await vextoFetch(settings, "/add", {
         method: "POST",
         headers: vextoHeaders(settings, true),
-        body: JSON.stringify(takeoverPayload(item)),
+        body: JSON.stringify(payload),
         timeoutMs: TAKEOVER_DEADLINE_MS,
       });
     } catch (error) {

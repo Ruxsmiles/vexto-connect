@@ -3,13 +3,26 @@
 
 "use strict";
 
+const DEFAULT_SITE_RULES = Object.freeze({
+  allow: Object.freeze([]),
+  block: Object.freeze([]),
+});
+
 const DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
   host: "127.0.0.1",
   port: 29110,
   secret: "",
   autoTakeover: false,
+  forwardHeaders: true,
+  forwardCookies: false,
+  minimumSizeMb: 0,
+  unknownSizeTakeover: true,
+  duplicateWindowSeconds: 10,
+  siteRules: DEFAULT_SITE_RULES,
 });
+
+const SITE_RULE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*$/;
 
 const LOOPBACK_HOSTS = Object.freeze(["127.0.0.1", "localhost"]);
 const CLIENT_HEADER = "X-Rayburst-Client";
@@ -20,6 +33,12 @@ const ADD_TIMEOUT_MS = 5000;
 function normalizeSettings(raw) {
   const src = raw && typeof raw === "object" ? raw : {};
   const port = Number(src.port);
+  const minSize = Number(src.minimumSizeMb);
+  const dupWindow = Number(src.duplicateWindowSeconds);
+  const rules =
+    src.siteRules && typeof src.siteRules === "object" && !Array.isArray(src.siteRules)
+      ? src.siteRules
+      : {};
   return {
     enabled: typeof src.enabled === "boolean" ? src.enabled : DEFAULT_SETTINGS.enabled,
     host:
@@ -33,7 +52,76 @@ function normalizeSettings(raw) {
     secret: typeof src.secret === "string" ? src.secret.trim() : DEFAULT_SETTINGS.secret,
     autoTakeover:
       typeof src.autoTakeover === "boolean" ? src.autoTakeover : DEFAULT_SETTINGS.autoTakeover,
+    forwardHeaders:
+      typeof src.forwardHeaders === "boolean"
+        ? src.forwardHeaders
+        : DEFAULT_SETTINGS.forwardHeaders,
+    forwardCookies:
+      typeof src.forwardCookies === "boolean"
+        ? src.forwardCookies
+        : DEFAULT_SETTINGS.forwardCookies,
+    minimumSizeMb:
+      Number.isFinite(minSize) && minSize >= 0 ? minSize : DEFAULT_SETTINGS.minimumSizeMb,
+    unknownSizeTakeover:
+      typeof src.unknownSizeTakeover === "boolean"
+        ? src.unknownSizeTakeover
+        : DEFAULT_SETTINGS.unknownSizeTakeover,
+    duplicateWindowSeconds:
+      Number.isInteger(dupWindow) && dupWindow >= 0
+        ? dupWindow
+        : DEFAULT_SETTINGS.duplicateWindowSeconds,
+    siteRules: {
+      allow: Array.isArray(rules.allow)
+        ? rules.allow.filter((rule) => typeof rule === "string" && rule)
+        : [],
+      block: Array.isArray(rules.block)
+        ? rules.block.filter((rule) => typeof rule === "string" && rule)
+        : [],
+    },
   };
+}
+
+// 站点规则：域名后缀匹配（example.com 同时匹配 sub.example.com）。
+// 用户输入里允许带协议、路径、端口和 *. 前缀，统一归一化成域名。
+function normalizeSiteRule(raw) {
+  let rule = String(raw ?? "").trim().toLowerCase();
+  rule = rule.replace(/^[a-z][a-z0-9+.-]*:\/\//, "");
+  rule = rule.split("/")[0];
+  rule = rule.split(":")[0];
+  rule = rule.replace(/^\*\./, "").replace(/^\.+/, "").replace(/\.+$/, "");
+  return rule;
+}
+
+function isValidSiteRule(rule) {
+  return rule.length > 0 && rule.length <= 253 && SITE_RULE_RE.test(rule);
+}
+
+function parseSiteRules(text) {
+  const rules = [];
+  const invalid = [];
+  for (const raw of String(text ?? "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const rule = normalizeSiteRule(line);
+    if (!isValidSiteRule(rule)) {
+      invalid.push(line);
+    } else if (!rules.includes(rule)) {
+      rules.push(rule);
+    }
+  }
+  return { rules, invalid };
+}
+
+function matchesSiteRule(hostname, rule) {
+  return hostname === rule || hostname.endsWith(`.${rule}`);
+}
+
+function hostnameOf(rawUrl) {
+  try {
+    return new URL(rawUrl).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
 }
 
 // 表单校验：返回 { ok, errors, settings }。errors 按字段给出中文原因。
@@ -54,6 +142,27 @@ function validateSettings(input) {
     errors.port = "端口必须是 1024–65535 之间的整数。";
   }
 
+  const minRaw = String(input?.minimumSizeMb ?? "").trim();
+  const minSize = minRaw === "" ? 0 : Number(minRaw);
+  if (!Number.isFinite(minSize) || minSize < 0) {
+    errors.minimumSizeMb = "最小文件大小必须是不小于 0 的数字（MB）。";
+  }
+
+  const dupRaw = String(input?.duplicateWindowSeconds ?? "").trim();
+  const dupWindow = dupRaw === "" ? 0 : Number(dupRaw);
+  if (!Number.isInteger(dupWindow) || dupWindow < 0) {
+    errors.duplicateWindowSeconds = "重复保护窗口必须是不小于 0 的整数（秒）。";
+  }
+
+  const allow = parseSiteRules(input?.allowSitesText ?? "");
+  const block = parseSiteRules(input?.blockSitesText ?? "");
+  if (allow.invalid.length) {
+    errors.allowSites = `无法识别的域名：${allow.invalid.slice(0, 3).join("、")}`;
+  }
+  if (block.invalid.length) {
+    errors.blockSites = `无法识别的域名：${block.invalid.slice(0, 3).join("、")}`;
+  }
+
   return {
     ok: Object.keys(errors).length === 0,
     errors,
@@ -63,6 +172,15 @@ function validateSettings(input) {
       port: Number.isInteger(port) ? port : DEFAULT_SETTINGS.port,
       secret: String(input?.secret ?? "").trim(),
       autoTakeover: Boolean(input?.autoTakeover),
+      forwardHeaders: input?.forwardHeaders !== false,
+      forwardCookies: Boolean(input?.forwardCookies),
+      minimumSizeMb: Number.isFinite(minSize) && minSize >= 0 ? minSize : DEFAULT_SETTINGS.minimumSizeMb,
+      unknownSizeTakeover: input?.unknownSizeTakeover !== false,
+      duplicateWindowSeconds:
+        Number.isInteger(dupWindow) && dupWindow >= 0
+          ? dupWindow
+          : DEFAULT_SETTINGS.duplicateWindowSeconds,
+      siteRules: { allow: allow.rules, block: block.rules },
     },
   };
 }

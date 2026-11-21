@@ -10,13 +10,32 @@ const els = {
   host: $("host"),
   port: $("port"),
   secret: $("secret"),
+  forwardHeaders: $("forwardHeaders"),
+  forwardCookies: $("forwardCookies"),
+  cookieHint: $("cookie-hint"),
+  minimumSizeMb: $("minimumSizeMb"),
+  unknownSizeTakeover: $("unknownSizeTakeover"),
+  duplicateWindowSeconds: $("duplicateWindowSeconds"),
+  allowSites: $("allowSites"),
+  blockSites: $("blockSites"),
   save: $("save"),
   test: $("test"),
   status: $("status"),
   detail: $("detail"),
 };
 
+const ERROR_FIELDS = [
+  "host",
+  "port",
+  "minimumSizeMb",
+  "duplicateWindowSeconds",
+  "allowSites",
+  "blockSites",
+];
+const COOKIE_ORIGINS = ["*://*/*"];
+
 let busy = false;
+let cookieHostGranted = false;
 
 function readForm() {
   return {
@@ -25,6 +44,13 @@ function readForm() {
     host: els.host.value,
     port: els.port.value,
     secret: els.secret.value,
+    forwardHeaders: els.forwardHeaders.checked,
+    forwardCookies: els.forwardCookies.checked,
+    minimumSizeMb: els.minimumSizeMb.value,
+    unknownSizeTakeover: els.unknownSizeTakeover.checked,
+    duplicateWindowSeconds: els.duplicateWindowSeconds.value,
+    allowSitesText: els.allowSites.value,
+    blockSitesText: els.blockSites.value,
   };
 }
 
@@ -34,6 +60,13 @@ function render(settings) {
   els.host.value = settings.host;
   els.port.value = String(settings.port);
   els.secret.value = settings.secret;
+  els.forwardHeaders.checked = settings.forwardHeaders;
+  els.forwardCookies.checked = settings.forwardCookies;
+  els.minimumSizeMb.value = String(settings.minimumSizeMb);
+  els.unknownSizeTakeover.checked = settings.unknownSizeTakeover;
+  els.duplicateWindowSeconds.value = String(settings.duplicateWindowSeconds);
+  els.allowSites.value = settings.siteRules.allow.join("\n");
+  els.blockSites.value = settings.siteRules.block.join("\n");
 }
 
 function setStatus(text, kind = "") {
@@ -58,8 +91,17 @@ function setBusy(value) {
   els.test.textContent = value ? "测试中…" : "测试连接";
 }
 
+function clearFieldError(field) {
+  const input = els[field];
+  input.classList.remove("invalid");
+  input.removeAttribute("aria-invalid");
+  const errorEl = $(`${field}-error`);
+  errorEl.textContent = "";
+  errorEl.hidden = true;
+}
+
 function showFieldErrors(errors) {
-  for (const field of ["host", "port"]) {
+  for (const field of ERROR_FIELDS) {
     const input = els[field];
     const errorEl = $(`${field}-error`);
     const message = errors[field];
@@ -69,12 +111,32 @@ function showFieldErrors(errors) {
       errorEl.textContent = message;
       errorEl.hidden = false;
     } else {
-      input.classList.remove("invalid");
-      input.removeAttribute("aria-invalid");
-      errorEl.textContent = "";
-      errorEl.hidden = true;
+      clearFieldError(field);
     }
   }
+}
+
+function refreshCookieHint() {
+  if (!els.forwardCookies.checked) {
+    els.cookieHint.textContent =
+      "默认关闭；开启后会把登录态交给本机 Vexto，首次开启需要授权全站 Cookie。";
+  } else if (cookieHostGranted) {
+    els.cookieHint.textContent =
+      "已授权全站 Cookie（仅在开启时读取，并只发送给本机 Vexto）。";
+  } else {
+    els.cookieHint.textContent =
+      "尚未授权全站 Cookie：保存时会请求权限；未授权时 Cookie 转发会保持关闭。";
+  }
+}
+
+async function loadCookiePermission() {
+  try {
+    cookieHostGranted = await chrome.permissions.contains({ origins: COOKIE_ORIGINS });
+  } catch (error) {
+    cookieHostGranted = false;
+    console.warn("检查 Cookie 权限失败：", error);
+  }
+  refreshCookieHint();
 }
 
 async function loadSettings() {
@@ -87,6 +149,7 @@ async function loadSettings() {
     render(DEFAULT_SETTINGS);
     setStatus("使用默认设置（尚未保存）", "");
   }
+  await loadCookiePermission();
 }
 
 async function saveSettings() {
@@ -97,10 +160,38 @@ async function saveSettings() {
     setStatus("设置未保存：请修正标红的字段。", "bad");
     return;
   }
+
+  let notice = "";
+  // 权限申请必须在用户手势里发起：这里之前只有同步代码。
+  if (settings.forwardCookies && !cookieHostGranted) {
+    try {
+      cookieHostGranted = await chrome.permissions.request({ origins: COOKIE_ORIGINS });
+    } catch (error) {
+      cookieHostGranted = false;
+      console.warn("请求 Cookie 权限失败：", error);
+    }
+    if (!cookieHostGranted) {
+      settings.forwardCookies = false;
+      els.forwardCookies.checked = false;
+      notice = "未获得全站 Cookie 权限，Cookie 转发已关闭；其他设置已保存。";
+    }
+  } else if (!settings.forwardCookies && cookieHostGranted) {
+    try {
+      await chrome.permissions.remove({ origins: COOKIE_ORIGINS });
+      cookieHostGranted = false;
+    } catch (error) {
+      console.warn("移除 Cookie 权限失败：", error);
+    }
+  }
+  refreshCookieHint();
+
   try {
     await chrome.storage.local.set({ settings });
     const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
-    setStatus(`已保存 · ${settings.host}:${settings.port} · ${time}`, "ok");
+    setStatus(
+      notice || `已保存 · ${settings.host}:${settings.port} · ${time}`,
+      notice ? "warn" : "ok"
+    );
   } catch (error) {
     setStatus(`保存失败：${error?.message || error}`, "bad");
   }
@@ -214,19 +305,17 @@ async function testConnection() {
 
 els.save.addEventListener("click", () => void saveSettings());
 els.test.addEventListener("click", () => void testConnection());
+els.forwardCookies.addEventListener("change", refreshCookieHint);
 
-for (const field of ["host", "port"]) {
-  els[field].addEventListener("input", () => {
-    els[field].classList.remove("invalid");
-    els[field].removeAttribute("aria-invalid");
-    const errorEl = $(`${field}-error`);
-    errorEl.textContent = "";
-    errorEl.hidden = true;
-  });
+for (const field of ERROR_FIELDS) {
+  els[field].addEventListener("input", () => clearFieldError(field));
 }
 
+chrome.permissions.onAdded.addListener(() => void loadCookiePermission());
+chrome.permissions.onRemoved.addListener(() => void loadCookiePermission());
+
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !event.isComposing) {
+  if (event.key === "Enter" && !event.isComposing && event.target.tagName !== "TEXTAREA") {
     event.preventDefault();
     void saveSettings();
   }
