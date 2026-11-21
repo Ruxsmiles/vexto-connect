@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   host: "127.0.0.1",
   port: 29110,
   secret: "",
+  autoTakeover: false,
 });
 
 const LOOPBACK_HOSTS = Object.freeze(["127.0.0.1", "localhost"]);
@@ -30,6 +31,8 @@ function normalizeSettings(raw) {
         ? port
         : DEFAULT_SETTINGS.port,
     secret: typeof src.secret === "string" ? src.secret.trim() : DEFAULT_SETTINGS.secret,
+    autoTakeover:
+      typeof src.autoTakeover === "boolean" ? src.autoTakeover : DEFAULT_SETTINGS.autoTakeover,
   };
 }
 
@@ -59,6 +62,7 @@ function validateSettings(input) {
       host: host || DEFAULT_SETTINGS.host,
       port: Number.isInteger(port) ? port : DEFAULT_SETTINGS.port,
       secret: String(input?.secret ?? "").trim(),
+      autoTakeover: Boolean(input?.autoTakeover),
     },
   };
 }

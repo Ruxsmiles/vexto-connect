@@ -6,6 +6,7 @@ const $ = (id) => document.getElementById(id);
 
 const els = {
   enabled: $("enabled"),
+  autoTakeover: $("autoTakeover"),
   host: $("host"),
   port: $("port"),
   secret: $("secret"),
@@ -20,6 +21,7 @@ let busy = false;
 function readForm() {
   return {
     enabled: els.enabled.checked,
+    autoTakeover: els.autoTakeover.checked,
     host: els.host.value,
     port: els.port.value,
     secret: els.secret.value,
@@ -28,6 +30,7 @@ function readForm() {
 
 function render(settings) {
   els.enabled.checked = settings.enabled;
+  els.autoTakeover.checked = settings.autoTakeover;
   els.host.value = settings.host;
   els.port.value = String(settings.port);
   els.secret.value = settings.secret;
