@@ -1,0 +1,12 @@
+# 浏览器插件的构建产物 / 压缩包不入库
+node_modules/
+dist/
+*.zip
+*.crx
+*.pem
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
