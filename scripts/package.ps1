@@ -28,8 +28,19 @@ foreach ($file in $files) {
   Copy-Item (Join-Path $root $file) (Join-Path $staging $file)
 }
 Copy-Item (Join-Path $root "icons") (Join-Path $staging "icons") -Recurse
+Copy-Item (Join-Path $root "assets") (Join-Path $staging "assets") -Recurse
 
-Compress-Archive -Path (Join-Path $staging "*") -DestinationPath $zip -Force
+# Build zip with file entries only (no directory entries).
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::Open($zip, "Create")
+try {
+  Get-ChildItem -Path $staging -Recurse -File | ForEach-Object {
+    $entryName = $_.FullName.Substring($staging.Length + 1).Replace("\", "/")
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $entryName) | Out-Null
+  }
+} finally {
+  $archive.Dispose()
+}
 Remove-Item $staging -Recurse -Force
 
 Write-Output $zip

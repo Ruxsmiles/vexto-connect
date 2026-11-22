@@ -63,6 +63,7 @@ const DOWNLOAD_UI_PERMISSION = { permissions: ["downloads.ui"] };
 let busy = false;
 let cookieHostGranted = false;
 let downloadUiGranted = false;
+let downloadUiSupported = true;
 let savedSnapshot = null;
 let dirty = false;
 
@@ -168,7 +169,7 @@ function refreshCookieHint() {
 
 async function loadCookiePermission() {
   try {
-    cookieHostGranted = await chrome.permissions.contains({ origins: COOKIE_ORIGINS });
+    cookieHostGranted = await ext.permissions.contains({ origins: COOKIE_ORIGINS });
   } catch (error) {
     cookieHostGranted = false;
     console.warn("检查 Cookie 权限失败：", error);
@@ -191,14 +192,16 @@ function refreshDownloadUiHint() {
 
 async function loadDownloadUiPermission() {
   const supported = typeof chrome.downloads?.setUiOptions === "function";
+  downloadUiSupported = supported;
   els.hideDownloadUiRow.hidden = !supported;
   els.downloadUiHint.hidden = !supported;
   if (!supported) {
+    downloadUiGranted = false;
     els.grantDownloadUi.hidden = true;
     return;
   }
   try {
-    downloadUiGranted = await chrome.permissions.contains(DOWNLOAD_UI_PERMISSION);
+    downloadUiGranted = await ext.permissions.contains(DOWNLOAD_UI_PERMISSION);
   } catch (error) {
     downloadUiGranted = false;
     console.warn("检查下载 UI 权限失败：", error);
@@ -256,7 +259,7 @@ function renderDiagnostics(list) {
 
 async function loadDiagnostics() {
   try {
-    const stored = await chrome.storage.session.get("diagnostics");
+    const stored = await ext.storage.session.get("diagnostics");
     renderDiagnostics(stored.diagnostics);
   } catch (error) {
     els.diagnostics.textContent = `读取诊断失败：${error?.message || error}`;
@@ -265,7 +268,7 @@ async function loadDiagnostics() {
 
 async function clearDiagnostics() {
   try {
-    await chrome.storage.session.remove("diagnostics");
+    await ext.storage.session.remove("diagnostics");
     renderDiagnostics([]);
     setStatus("诊断已清空。", "");
   } catch (error) {
@@ -347,7 +350,7 @@ function setLiveState(state, detail = {}) {
 }
 
 async function readSavedSettings() {
-  const stored = await chrome.storage.local.get("settings");
+  const stored = await ext.storage.local.get("settings");
   return normalizeSettings(stored.settings);
 }
 
@@ -482,7 +485,7 @@ function startLivePolling() {
 }
 
 async function loadSettings() {
-  const stored = await chrome.storage.local.get("settings");
+  const stored = await ext.storage.local.get("settings");
   if (stored.settings) {
     const settings = normalizeSettings(stored.settings);
     render(settings);
@@ -509,8 +512,9 @@ async function saveSettings() {
   }
 
   let notice = "";
+  if (!downloadUiSupported) settings.hideDownloadUi = false;
   const needCookie = settings.forwardCookies && !cookieHostGranted;
-  const needDownloadUi = settings.hideDownloadUi && !downloadUiGranted;
+  const needDownloadUi = downloadUiSupported && settings.hideDownloadUi && !downloadUiGranted;
 
   // 权限申请必须在用户手势里发起：这里之前只有同步代码。
   if (needCookie || needDownloadUi) {
@@ -518,12 +522,12 @@ async function saveSettings() {
     if (needCookie) request.origins = COOKIE_ORIGINS;
     if (needDownloadUi) request.permissions = ["downloads.ui"];
     try {
-      await chrome.permissions.request(request);
+      await ext.permissions.request(request);
     } catch (error) {
       console.warn("请求权限失败：", error);
     }
     if (needCookie) {
-      cookieHostGranted = await chrome.permissions
+      cookieHostGranted = await ext.permissions
         .contains({ origins: COOKIE_ORIGINS })
         .catch(() => false);
       if (!cookieHostGranted) {
@@ -533,7 +537,7 @@ async function saveSettings() {
       }
     }
     if (needDownloadUi) {
-      downloadUiGranted = await chrome.permissions
+      downloadUiGranted = await ext.permissions
         .contains(DOWNLOAD_UI_PERMISSION)
         .catch(() => false);
       if (!downloadUiGranted) {
@@ -546,7 +550,7 @@ async function saveSettings() {
 
   if (!settings.forwardCookies && cookieHostGranted) {
     try {
-      await chrome.permissions.remove({ origins: COOKIE_ORIGINS });
+      await ext.permissions.remove({ origins: COOKIE_ORIGINS });
       cookieHostGranted = false;
     } catch (error) {
       console.warn("移除 Cookie 权限失败：", error);
@@ -556,7 +560,7 @@ async function saveSettings() {
   refreshDownloadUiHint();
 
   try {
-    await chrome.storage.local.set({ settings });
+    await ext.storage.local.set({ settings });
     savedSnapshot = formSnapshot();
     dirty = false;
     refreshSaveState();
@@ -699,7 +703,7 @@ els.diagRefresh.addEventListener("click", () => void loadDiagnostics());
 els.diagClear.addEventListener("click", () => void clearDiagnostics());
 els.grantCookies.addEventListener("click", async () => {
   try {
-    cookieHostGranted = await chrome.permissions.request({ origins: COOKIE_ORIGINS });
+    cookieHostGranted = await ext.permissions.request({ origins: COOKIE_ORIGINS });
   } catch (error) {
     cookieHostGranted = false;
     console.warn("请求 Cookie 权限失败：", error);
@@ -712,7 +716,7 @@ els.grantCookies.addEventListener("click", async () => {
 });
 els.grantDownloadUi.addEventListener("click", async () => {
   try {
-    downloadUiGranted = await chrome.permissions.request(DOWNLOAD_UI_PERMISSION);
+    downloadUiGranted = await ext.permissions.request(DOWNLOAD_UI_PERMISSION);
   } catch (error) {
     downloadUiGranted = false;
     console.warn("请求下载 UI 权限失败：", error);
@@ -758,7 +762,7 @@ els.miniStatus.addEventListener("click", () => {
   void checkLiveStatus();
 });
 
-chrome.storage.onChanged.addListener((changes, area) => {
+ext.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.settings) void checkLiveStatus();
 });
 
@@ -790,11 +794,11 @@ for (const field of FORM_FIELDS) {
   els[field].addEventListener("change", updateDirtyState);
 }
 
-chrome.permissions.onAdded.addListener(() => {
+ext.permissions.onAdded.addListener(() => {
   void loadCookiePermission();
   void loadDownloadUiPermission();
 });
-chrome.permissions.onRemoved.addListener(() => {
+ext.permissions.onRemoved.addListener(() => {
   void loadCookiePermission();
   void loadDownloadUiPermission();
 });
@@ -806,7 +810,7 @@ document.addEventListener("keydown", (event) => {
   void saveSettings();
 });
 
-els.appVersion.textContent = chrome.runtime.getManifest().version;
+els.appVersion.textContent = ext.runtime.getManifest().version;
 showPane(paneFromHash(), { updateHash: false });
 startLivePolling();
 

@@ -3,6 +3,15 @@
 
 "use strict";
 
+// Firefox 独有 runtime.getBrowserInfo；Edge 也会暴露 browser 全局，不能用它判断。
+const IS_FIREFOX =
+  typeof globalThis.browser?.runtime?.getBrowserInfo === "function" ||
+  typeof globalThis.chrome?.runtime?.getBrowserInfo === "function";
+// Chrome / Edge 用 chrome.*（MV3 Promise），Firefox 用 browser.*（Promise）。
+const ext = IS_FIREFOX ? globalThis.browser : globalThis.chrome;
+// Firefox 的 downloads.pause() 会让下载变成 USER_CANCELED 且无法恢复，
+// 因此 Firefox 版跳过暂停，直接交接；失败时浏览器下载继续。
+
 const DEFAULT_SITE_RULES = Object.freeze({
   allow: Object.freeze([]),
   block: Object.freeze([]),
@@ -13,13 +22,13 @@ const DEFAULT_SETTINGS = Object.freeze({
   host: "127.0.0.1",
   port: 29110,
   secret: "",
-  autoTakeover: false,
+  autoTakeover: true,
   forwardHeaders: true,
   forwardCookies: false,
   minimumSizeMb: 0,
   unknownSizeTakeover: true,
   duplicateWindowSeconds: 10,
-  hideDownloadUi: false,
+  hideDownloadUi: true,
   siteRules: DEFAULT_SITE_RULES,
 });
 
@@ -28,10 +37,9 @@ const SITE_RULE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*
 const LOOPBACK_HOSTS = Object.freeze(["127.0.0.1", "localhost"]);
 const CLIENT_HEADER = "X-Rayburst-Client";
 const CLIENT_VALUE = "rayburst-connect";
-const VEXTO_CLIENT_VERSION =
-  typeof chrome !== "undefined" && chrome.runtime?.getManifest
-    ? chrome.runtime.getManifest().version
-    : "0.4.0";
+const VEXTO_CLIENT_VERSION = ext.runtime?.getManifest
+  ? ext.runtime.getManifest().version
+  : "0.4.0";
 const VEXTO_CLIENT = `connect/${VEXTO_CLIENT_VERSION}`;
 const PROTOCOL_MODE_KEY = "protocolMode";
 const PROTOCOL_MODE_TTL_MS = 5 * 60 * 1000;
@@ -245,7 +253,7 @@ async function readJson(response) {
 // 协议模式缓存：有 /v1 时优先，否则回落兼容接口。缓存 5 分钟。
 async function readProtocolMode() {
   try {
-    const stored = await chrome.storage.session.get(PROTOCOL_MODE_KEY);
+    const stored = await ext.storage.session.get(PROTOCOL_MODE_KEY);
     const mode = stored[PROTOCOL_MODE_KEY];
     if (mode && Date.now() - mode.at < PROTOCOL_MODE_TTL_MS) return mode;
   } catch {
@@ -257,7 +265,7 @@ async function readProtocolMode() {
 async function writeProtocolMode(mode, protocol) {
   const entry = { mode, protocol, at: Date.now() };
   try {
-    await chrome.storage.session.set({ [PROTOCOL_MODE_KEY]: entry });
+    await ext.storage.session.set({ [PROTOCOL_MODE_KEY]: entry });
   } catch {
     // 缓存失败不影响交接
   }

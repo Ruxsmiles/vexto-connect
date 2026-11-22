@@ -6,7 +6,8 @@
 // 被回收后 onDeterminingFilename 不会唤醒它，下载会直接绕过接管；onCreated
 // 能可靠唤醒 worker。代价是下载可能已开始写少量数据，所以这里先 pause 再交接。
 
-importScripts("common.js");
+// Chrome / Edge 的 service worker 需要显式导入；Firefox 事件页由清单按顺序加载。
+if (typeof importScripts === "function") importScripts("common.js");
 
 const MENU_ID = "vexto-download-link";
 const MENU_TITLE = "用 Vexto 下载";
@@ -39,10 +40,10 @@ function addDiagnostic(event) {
 }
 
 async function appendDiagnostic(event) {
-  const stored = await chrome.storage.session.get(DIAG_KEY);
+  const stored = await ext.storage.session.get(DIAG_KEY);
   const list = Array.isArray(stored[DIAG_KEY]) ? stored[DIAG_KEY] : [];
   list.push({ at: Date.now(), ...event });
-  await chrome.storage.session.set({ [DIAG_KEY]: list.slice(-DIAG_LIMIT) });
+  await ext.storage.session.set({ [DIAG_KEY]: list.slice(-DIAG_LIMIT) });
 }
 
 // ── 设置缓存 ────────────────────────────────────────────────────────────
@@ -50,7 +51,7 @@ async function appendDiagnostic(event) {
 
 let settingsCache = null;
 let settingsFromChange = false;
-const settingsReady = chrome.storage.local
+const settingsReady = ext.storage.local
   .get("settings")
   .then((stored) => {
     // 初次读取可能晚于一次 storage.onChanged，不要用旧值覆盖新值
@@ -79,17 +80,17 @@ let downloadUiPermission = null;
 
 async function hasDownloadUiPermission() {
   if (downloadUiPermission === null) {
-    downloadUiPermission = await chrome.permissions
+    downloadUiPermission = await ext.permissions
       .contains({ permissions: ["downloads.ui"] })
       .catch(() => false);
   }
   return downloadUiPermission;
 }
 
-chrome.permissions.onAdded?.addListener((added) => {
+ext.permissions.onAdded?.addListener((added) => {
   if (added.permissions?.includes("downloads.ui")) downloadUiPermission = true;
 });
-chrome.permissions.onRemoved?.addListener((removed) => {
+ext.permissions.onRemoved?.addListener((removed) => {
   if (removed.permissions?.includes("downloads.ui")) downloadUiPermission = false;
 });
 
@@ -150,7 +151,7 @@ async function sendAdd(settings, payload, timeoutMs) {
   return { response, mode: "compat" };
 }
 
-chrome.storage.onChanged.addListener((changes, area) => {
+ext.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !changes.settings) return;
   settingsFromChange = true;
   settingsCache = normalizeSettings(changes.settings.newValue);
@@ -166,7 +167,7 @@ async function refreshMenu() {
   const generation = ++menuGeneration;
   const settings = await loadSettings();
   if (generation !== menuGeneration) return;
-  await chrome.contextMenus.removeAll();
+  await ext.contextMenus.removeAll();
   if (generation !== menuGeneration || !settings.enabled) return;
   chrome.contextMenus.create(
     { id: MENU_ID, title: MENU_TITLE, contexts: ["link"] },
@@ -180,13 +181,13 @@ async function refreshMenu() {
 
 void refreshMenu();
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+ext.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId !== MENU_ID) return;
   void handoffLink(info.linkUrl || "", tab?.url || "");
 });
 
-chrome.notifications.onClicked.addListener(() => {
-  void chrome.runtime.openOptionsPage();
+ext.notifications.onClicked.addListener(() => {
+  void ext.runtime.openOptionsPage();
 });
 
 // ── 手动交接（M1）──────────────────────────────────────────────────────
@@ -202,8 +203,8 @@ function filenameFromUrl(rawUrl) {
 }
 
 async function handoffLink(linkUrl, referer) {
-  await chrome.action.setBadgeText({ text: "" });
-  await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 正在交给 Vexto…` });
+  await ext.action.setBadgeText({ text: "" });
+  await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 正在交给 Vexto…` });
 
   const settings = await loadSettings();
 
@@ -283,18 +284,18 @@ async function handoffLink(linkUrl, referer) {
 }
 
 async function reportSuccess() {
-  await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR_OK });
-  await chrome.action.setBadgeText({ text: BADGE_OK });
-  await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 已交给 Vexto` });
+  await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_OK });
+  await ext.action.setBadgeText({ text: BADGE_OK });
+  await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 已交给 Vexto` });
   clearBadgeSoon();
 }
 
 async function reportFailure(headline, reason, fallbackUrl) {
   console.warn(`Vexto Connect：${headline}。${reason}`);
   try {
-    await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
-    await chrome.action.setBadgeText({ text: BADGE_ERR });
-    await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
+    await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
+    await ext.action.setBadgeText({ text: BADGE_ERR });
+    await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
 
     const fallbackNote = fallbackUrl ? "已改用浏览器下载。" : "";
     notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, `${reason}${fallbackNote}`);
@@ -343,7 +344,7 @@ function isSelfDownload(url) {
 
 // ── 自动接管（M2）──────────────────────────────────────────────────────
 
-chrome.downloads.onCreated.addListener((item) => {
+ext.downloads.onCreated.addListener((item) => {
   void maybeTakeOver(item);
 });
 
@@ -404,14 +405,17 @@ async function maybeTakeOver(item) {
   if (hideUi) beginDownloadUiHide();
 
   try {
-    // 先暂停，尽量在写入数据前停住；50ms 后再复查 byExtensionId
-    chrome.downloads.pause(item.id, () => {
-      void chrome.runtime.lastError;
-    });
+    // 先暂停，尽量在写入数据前停住；50ms 后再复查 byExtensionId。
+    // Firefox 的 pause 会取消下载，改为直接交接。
+    if (!IS_FIREFOX) {
+      chrome.downloads.pause(item.id, () => {
+        void chrome.runtime.lastError;
+      });
+    }
     await new Promise((resolve) => setTimeout(resolve, 50));
     let fresh = item;
     try {
-      [fresh] = await chrome.downloads.search({ id: item.id });
+      [fresh] = await ext.downloads.search({ id: item.id });
     } catch {
       fresh = null;
     }
@@ -497,7 +501,7 @@ async function isDuplicateHandoff(item, settings) {
   if (!(settings.duplicateWindowSeconds > 0)) return false;
   try {
     const key = await handoffKey(item);
-    const stored = await chrome.storage.session.get(RECENT_KEY);
+    const stored = await ext.storage.session.get(RECENT_KEY);
     const map = stored[RECENT_KEY] || {};
     const at = map[key];
     return Boolean(at) && Date.now() - at < settings.duplicateWindowSeconds * 1000;
@@ -511,14 +515,14 @@ async function rememberHandoff(item, settings) {
   if (!(settings.duplicateWindowSeconds > 0)) return;
   try {
     const key = await handoffKey(item);
-    const stored = await chrome.storage.session.get(RECENT_KEY);
+    const stored = await ext.storage.session.get(RECENT_KEY);
     const map = stored[RECENT_KEY] || {};
     const cutoff = Date.now() - settings.duplicateWindowSeconds * 1000;
     for (const [k, at] of Object.entries(map)) {
       if (at < cutoff) delete map[k];
     }
     map[key] = Date.now();
-    await chrome.storage.session.set({ [RECENT_KEY]: map });
+    await ext.storage.session.set({ [RECENT_KEY]: map });
   } catch (error) {
     console.warn("记录重复下载失败：", error);
   }
@@ -526,7 +530,7 @@ async function rememberHandoff(item, settings) {
 
 async function cookieHeaderFor(url) {
   try {
-    const cookies = await chrome.cookies.getAll({ url });
+    const cookies = await ext.cookies.getAll({ url });
     cookies.sort((a, b) => (b.path?.length || 0) - (a.path?.length || 0));
     return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
   } catch (error) {
@@ -541,16 +545,24 @@ async function beginTakeover(item, settings) {
   const host = hostnameOf(item.finalUrl || item.url);
 
   let settled = false;
-  // 安全网：任何路径卡住都必须在 deadline 后恢复浏览器下载
-  const guard = setTimeout(() => {
-    if (!settled) resumeDownload(item.id);
-  }, TAKEOVER_DEADLINE_MS + 500);
+  // 安全网：Chrome / Edge 暂停后卡住时必须恢复浏览器下载；Firefox 没有暂停。
+  const guard = IS_FIREFOX
+    ? null
+    : setTimeout(() => {
+        if (!settled) resumeDownload(item.id);
+      }, TAKEOVER_DEADLINE_MS + 500);
 
   try {
-    await setPending(item.id, { url: item.url, startedAt: Date.now(), stage: "paused" });
-    chrome.downloads.pause(item.id, () => {
-      void chrome.runtime.lastError;
+    await setPending(item.id, {
+      url: item.url,
+      startedAt: Date.now(),
+      stage: IS_FIREFOX ? "handoff" : "paused",
     });
+    if (!IS_FIREFOX) {
+      chrome.downloads.pause(item.id, () => {
+        void chrome.runtime.lastError;
+      });
+    }
 
     let result;
     try {
@@ -645,6 +657,8 @@ async function beginTakeover(item, settings) {
 }
 
 function resumeDownload(id) {
+  // Firefox 从未暂停下载，恢复会报错并可能影响下载
+  if (IS_FIREFOX) return;
   chrome.downloads.resume(id, () => {
     void chrome.runtime.lastError;
   });
@@ -653,7 +667,7 @@ function resumeDownload(id) {
 async function removeBrowserDownload(id) {
   let item = null;
   try {
-    [item] = await chrome.downloads.search({ id });
+    [item] = await ext.downloads.search({ id });
   } catch (error) {
     return { ok: false, action: "search-failed", error: error?.message || String(error) };
   }
@@ -662,9 +676,9 @@ async function removeBrowserDownload(id) {
   const wasComplete = item.state === "complete";
   try {
     if (wasComplete) {
-      await chrome.downloads.removeFile(id);
+      await ext.downloads.removeFile(id);
     } else {
-      await chrome.downloads.cancel(id);
+      await ext.downloads.cancel(id);
     }
   } catch (error) {
     return {
@@ -676,7 +690,7 @@ async function removeBrowserDownload(id) {
   }
 
   try {
-    await chrome.downloads.erase({ id });
+    await ext.downloads.erase({ id });
   } catch (error) {
     console.warn("清除下载记录失败：", error?.message || error);
   }
@@ -685,9 +699,9 @@ async function removeBrowserDownload(id) {
 
 async function reportTakeoverSuccess() {
   try {
-    await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR_OK });
-    await chrome.action.setBadgeText({ text: BADGE_OK });
-    await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 已接管下载` });
+    await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_OK });
+    await ext.action.setBadgeText({ text: BADGE_OK });
+    await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 已接管下载` });
   } catch (error) {
     console.warn("显示接管成功状态失败：", error);
   }
@@ -697,9 +711,9 @@ async function reportTakeoverSuccess() {
 async function reportTakeoverPartial(headline, reason, filename) {
   console.warn(`Vexto Connect：${headline}。${reason}`);
   try {
-    await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
-    await chrome.action.setBadgeText({ text: BADGE_ERR });
-    await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
+    await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
+    await ext.action.setBadgeText({ text: BADGE_ERR });
+    await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
   } catch (error) {
     console.warn("显示接管失败状态失败：", error);
   }
@@ -711,9 +725,9 @@ async function reportTakeoverPartial(headline, reason, filename) {
 async function reportTakeoverFailure(headline, reason) {
   console.warn(`Vexto Connect：${headline}。${reason}`);
   try {
-    await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
-    await chrome.action.setBadgeText({ text: BADGE_ERR });
-    await chrome.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
+    await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_ERR });
+    await ext.action.setBadgeText({ text: BADGE_ERR });
+    await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
   } catch (error) {
     console.warn("显示接管失败状态失败：", error);
   }
@@ -731,21 +745,21 @@ function notifyThrottled(key, title, message) {
 // ── 进行中的交接（storage.session）──────────────────────────────────────
 
 async function setPending(id, entry) {
-  const stored = await chrome.storage.session.get(PENDING_KEY);
+  const stored = await ext.storage.session.get(PENDING_KEY);
   const pending = stored[PENDING_KEY] || {};
   pending[id] = entry;
-  await chrome.storage.session.set({ [PENDING_KEY]: pending });
+  await ext.storage.session.set({ [PENDING_KEY]: pending });
 }
 
 async function clearPending(id) {
-  const stored = await chrome.storage.session.get(PENDING_KEY);
+  const stored = await ext.storage.session.get(PENDING_KEY);
   const pending = stored[PENDING_KEY] || {};
   if (!(id in pending)) return;
   delete pending[id];
   if (Object.keys(pending).length) {
-    await chrome.storage.session.set({ [PENDING_KEY]: pending });
+    await ext.storage.session.set({ [PENDING_KEY]: pending });
   } else {
-    await chrome.storage.session.remove(PENDING_KEY);
+    await ext.storage.session.remove(PENDING_KEY);
   }
 }
 
@@ -753,7 +767,7 @@ async function clearPending(id) {
 async function recoverPendingTakeovers() {
   let pending = {};
   try {
-    pending = (await chrome.storage.session.get(PENDING_KEY))[PENDING_KEY] || {};
+    pending = (await ext.storage.session.get(PENDING_KEY))[PENDING_KEY] || {};
   } catch (error) {
     console.warn("读取未完成交接失败：", error);
     return;
@@ -763,7 +777,7 @@ async function recoverPendingTakeovers() {
   for (const key of ids) {
     const id = Number(key);
     try {
-      const [item] = await chrome.downloads.search({ id });
+      const [item] = await ext.downloads.search({ id });
       if (item && item.state === "in_progress" && item.paused) {
         resumeDownload(id);
       }
@@ -771,7 +785,7 @@ async function recoverPendingTakeovers() {
       console.warn(`恢复下载 ${id} 失败：`, error);
     }
   }
-  await chrome.storage.session.remove(PENDING_KEY);
+  await ext.storage.session.remove(PENDING_KEY);
   addDiagnostic({ source: "auto", outcome: "recovered", count: ids.length });
   console.warn(`Vexto Connect：恢复了 ${ids.length} 条未完成的交接记录`);
 }
@@ -802,7 +816,7 @@ function clearBadgeSoon() {
   setTimeout(() => {
     // 只清除本次设置的状态，避免旧定时器抹掉新交接的 badge
     if (generation === badgeGeneration) {
-      void chrome.action.setBadgeText({ text: "" });
+      void ext.action.setBadgeText({ text: "" });
     }
   }, 3000);
 }
