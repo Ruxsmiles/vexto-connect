@@ -1,6 +1,6 @@
 # Vexto Connect
 
-把浏览器下载交给本机 Vexto 的浏览器扩展。
+Vexto Connect 是 [Vexto](https://github.com/Boom-Sumber/vexto) 的配套浏览器扩展，把浏览器下载交给本机 Vexto。
 
 在网页里点击下载、或在链接上右键选择「用 Vexto 下载」，任务会直接进入本机 Vexto 的下载队列，不再经过浏览器的下载管理。Vexto 未运行、拒绝接收或响应超时时，扩展会自动回落到浏览器原生下载，并说明原因，不丢任务。
 
@@ -9,6 +9,19 @@
 Manifest V3 · Edge / Chrome 109+ · Firefox 115+ · GPL-3.0
 
 ---
+
+## 配套应用：Vexto
+
+[Vexto](https://github.com/Boom-Sumber/vexto) 是一款 Windows 平台的简约工具箱，主要功能包括：
+
+- 划词翻译、输入翻译、截图翻译
+- 屏幕截图
+- OCR 识别（采用 PaddleOCR 引擎，精准识别）
+- 局域网互传
+- 浏览器接管下载（内置 aria2c 高速下载引擎）
+- 以及更多实用工具
+
+Vexto Connect 负责把浏览器里的下载交给 Vexto。使用前请先安装并运行 [Vexto](https://github.com/Boom-Sumber/vexto)。
 
 ## 功能
 
@@ -58,7 +71,7 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 
 ### 前置条件
 
-1. Vexto 已安装并在托盘运行。
+1. [Vexto](https://github.com/Boom-Sumber/vexto) 已安装并在托盘运行。
 2. 在 Vexto 设置中开启「插件接管」，确认端口（默认 `29110`）。
 3. 如果 Vexto 设置了「插件密钥」，稍后在扩展选项页填写相同密钥。
 
@@ -228,8 +241,10 @@ vexto-connect/
 
 ## 许可
 
-[GNU General Public License v3.0](LICENSE)，与 Vexto 主项目一致。
+[GNU General Public License v3.0](LICENSE)，与 [Vexto](https://github.com/Boom-Sumber/vexto) 主项目一致。
 
 ## 致谢
+
+感谢 [Vexto](https://github.com/Boom-Sumber/vexto) 提供桌面端与下载引擎。
 
 接口兼容 Vexto 现有的 Rayburst Connect 兼容层，便于存量用户平滑迁移。
