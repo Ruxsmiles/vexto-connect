@@ -30,6 +30,24 @@ const els = {
   diagRefresh: $("diag-refresh"),
   diagClear: $("diag-clear"),
   diagnostics: $("diagnostics"),
+  nav: $("nav"),
+  paneTitle: $("pane-title"),
+  paneDesc: $("pane-desc"),
+  appVersion: $("app-version"),
+  liveDot: $("live-dot"),
+  liveLabel: $("live-label"),
+  liveReason: $("live-reason"),
+  liveVersion: $("live-version"),
+  liveEngine: $("live-engine"),
+  liveProtocol: $("live-protocol"),
+  liveEndpoint: $("live-endpoint"),
+  liveChecked: $("live-checked"),
+  liveRefresh: $("live-refresh"),
+  miniStatus: $("mini-status"),
+  miniDot: $("mini-dot"),
+  miniLabel: $("mini-label"),
+  miniEndpoint: $("mini-endpoint"),
+  actionbar: $("actionbar"),
 };
 
 const ERROR_FIELDS = [
@@ -182,18 +200,48 @@ async function loadDownloadUiPermission() {
   refreshDownloadUiHint();
 }
 
+const DIAG_SOURCE_LABELS = { auto: "自动", manual: "手动" };
+const DIAG_OUTCOME_LABELS = {
+  accepted: "已接管",
+  fallback: "已回落",
+  skipped: "已跳过",
+  error: "失败",
+  recovered: "已恢复",
+};
+const DIAG_REASON_LABELS = {
+  "site-block": "站点排除",
+  "site-allow": "不在允许列表",
+  size: "小于最小大小",
+  "size-unknown": "大小未知",
+  duplicate: "重复下载",
+  network: "网络失败",
+  rejected: "Vexto 拒绝",
+};
+const DIAG_BROWSER_LABELS = {
+  canceled: "浏览器已取消",
+  removed: "浏览器文件已删除",
+  "cancel-failed": "浏览器取消失败",
+  "remove-failed": "浏览器删除失败",
+  "already-gone": "浏览器已无记录",
+  "search-failed": "浏览器查询失败",
+};
+
 function renderDiagnostics(list) {
   if (!Array.isArray(list) || !list.length) {
-    els.diagnostics.textContent = "暂无诊断事件。";
+    els.diagnostics.textContent = "暂无诊断事件。开启自动接管并下载一次后，这里会出现记录。";
     return;
   }
   const lines = list.map((event) => {
     const time = new Date(event.at).toLocaleTimeString("zh-CN", { hour12: false });
-    const parts = [time, event.source || "-", event.outcome || "-"];
+    const parts = [
+      time,
+      DIAG_SOURCE_LABELS[event.source] || event.source || "-",
+      DIAG_OUTCOME_LABELS[event.outcome] || event.outcome || "-",
+    ];
     if (event.host) parts.push(event.host);
-    if (event.reason) parts.push(event.reason);
-    if (event.browser) parts.push(event.browser);
-    if (event.protocol) parts.push(`协议 ${event.protocol}`);
+    if (event.reason) parts.push(DIAG_REASON_LABELS[event.reason] || event.reason);
+    if (event.browser) parts.push(DIAG_BROWSER_LABELS[event.browser] || event.browser);
+    if (event.protocol) parts.push(event.protocol === "v1" ? "协议 v1" : "协议 兼容");
     if (typeof event.count === "number") parts.push(`${event.count} 条`);
     return parts.join(" · ");
   });
@@ -219,15 +267,223 @@ async function clearDiagnostics() {
   }
 }
 
+// ── 分区导航 ────────────────────────────────────────────
+
+const PANES = {
+  connection: { title: "连接", desc: "配置 Vexto 本机接口，并查看实时连接状态。" },
+  auto: { title: "自动接管", desc: "把浏览器下载交给 Vexto，失败时恢复浏览器下载。" },
+  transfer: { title: "转发与过滤", desc: "控制交接时附带的信息，以及自动接管的过滤规则。" },
+  sites: { title: "站点规则", desc: "按域名决定哪些下载交给 Vexto。" },
+  diagnostics: { title: "诊断", desc: "查看最近的交接结果，排查失败原因。" },
+};
+
+function paneFromHash() {
+  const name = location.hash.replace(/^#/, "");
+  return PANES[name] ? name : "connection";
+}
+
+function showPane(name, { updateHash = true, focus = false } = {}) {
+  if (!PANES[name]) name = "connection";
+
+  for (const item of document.querySelectorAll(".nav-item")) {
+    const active = item.dataset.pane === name;
+    item.classList.toggle("is-active", active);
+    item.setAttribute("aria-selected", String(active));
+    item.tabIndex = active ? 0 : -1;
+    if (active && focus) item.focus();
+  }
+  for (const pane of document.querySelectorAll(".pane")) {
+    pane.hidden = pane.id !== `pane-${name}`;
+  }
+
+  els.paneTitle.textContent = PANES[name].title;
+  els.paneDesc.textContent = PANES[name].desc;
+  els.actionbar.hidden = name === "diagnostics";
+  if (updateHash && location.hash !== `#${name}`) {
+    history.replaceState(null, "", `#${name}`);
+  }
+  if (name === "diagnostics") void loadDiagnostics();
+}
+
+// ── 实时连接状态 ────────────────────────────────────────
+
+const LIVE_INTERVAL_MS = 8000;
+const LIVE_TIMEOUT_MS = 3000;
+let liveBusy = false;
+let liveTimer = null;
+
+function setDot(el, state) {
+  el.classList.remove("ok", "bad", "warn", "checking");
+  if (state) el.classList.add(state);
+}
+
+function setLiveState(state, detail = {}) {
+  const dotClass =
+    { connected: "ok", disconnected: "bad", warning: "warn", checking: "checking" }[state] || "";
+  setDot(els.liveDot, dotClass);
+  setDot(els.miniDot, dotClass);
+
+  const label = detail.label || "未知";
+  els.liveLabel.textContent = label;
+  els.miniLabel.textContent = label;
+  els.liveReason.textContent = detail.reason || "";
+
+  if ("version" in detail) els.liveVersion.textContent = detail.version || "—";
+  if ("engine" in detail) {
+    els.liveEngine.textContent =
+      detail.engine === "running" ? "就绪" : detail.engine ? "未启用" : "—";
+  }
+  if ("protocol" in detail) els.liveProtocol.textContent = detail.protocol || "—";
+  if ("endpoint" in detail) {
+    els.liveEndpoint.textContent = detail.endpoint || "—";
+    els.miniEndpoint.textContent = detail.endpoint || "";
+  }
+}
+
+async function readSavedSettings() {
+  const stored = await chrome.storage.local.get("settings");
+  return normalizeSettings(stored.settings);
+}
+
+async function checkLiveStatus() {
+  if (liveBusy) return;
+  liveBusy = true;
+
+  const settings = await readSavedSettings();
+  const endpoint = `${settings.host}:${settings.port}`;
+  setLiveState("checking", {
+    label: "检查中…",
+    reason: "正在读取已保存的设置",
+    endpoint,
+  });
+  els.liveChecked.textContent = "正在检查…";
+
+  try {
+    const pingResponse = await vextoFetch(settings, "/ping", { timeoutMs: LIVE_TIMEOUT_MS });
+    if (!pingResponse.ok) {
+      setLiveState("disconnected", {
+        label: "服务异常",
+        reason: describeHttpError(pingResponse.status),
+        version: null,
+        engine: null,
+        protocol: null,
+        endpoint,
+      });
+      return;
+    }
+    const ping = await readJson(pingResponse);
+    if (!ping || typeof ping.version !== "string") {
+      setLiveState("disconnected", {
+        label: "不是 Vexto",
+        reason: "端口上的服务没有返回 Vexto 版本。",
+        version: null,
+        engine: null,
+        protocol: null,
+        endpoint,
+      });
+      return;
+    }
+
+    const versionResponse = await vextoFetch(settings, "/version", { timeoutMs: LIVE_TIMEOUT_MS });
+    const version = await readJson(versionResponse);
+    if (!versionResponse.ok || !version || typeof version.engine !== "string") {
+      setLiveState("disconnected", {
+        label: "服务异常",
+        reason: "Vexto 的 /version 响应无法识别。",
+        version: ping.version,
+        engine: null,
+        protocol: null,
+        endpoint,
+      });
+      return;
+    }
+
+    const capabilitiesResponse = await vextoFetch(settings, "/downloads/capabilities", {
+      headers: vextoHeaders(settings),
+      timeoutMs: LIVE_TIMEOUT_MS,
+    });
+    if (capabilitiesResponse.status === 401) {
+      setLiveState("disconnected", {
+        label: "密钥不一致",
+        reason: describeHttpError(401),
+        version: ping.version,
+        engine: version.engine,
+        protocol: null,
+        endpoint,
+      });
+      return;
+    }
+    if (!capabilitiesResponse.ok) {
+      setLiveState("disconnected", {
+        label: "服务异常",
+        reason: describeHttpError(capabilitiesResponse.status),
+        version: ping.version,
+        engine: version.engine,
+        protocol: null,
+        endpoint,
+      });
+      return;
+    }
+
+    const capabilities = await readJson(capabilitiesResponse);
+    const v1 = await detectV1(settings, 1500);
+    const protocol = v1
+      ? "v1"
+      : capabilities && Number.isInteger(capabilities.protocolVersion)
+        ? `兼容 v${capabilities.protocolVersion}`
+        : "兼容";
+
+    if (version.engine === "running") {
+      setLiveState("connected", {
+        label: "已连接",
+        reason: `Vexto ${ping.version} · 引擎就绪 · ${v1 ? "协议 v1" : "兼容接口"}`,
+        version: ping.version,
+        engine: version.engine,
+        protocol,
+        endpoint,
+      });
+    } else {
+      setLiveState("warning", {
+        label: "引擎未启用",
+        reason: "Vexto 已连接，但下载引擎未启用；交接会回落到浏览器下载。",
+        version: ping.version,
+        engine: version.engine,
+        protocol,
+        endpoint,
+      });
+    }
+  } catch (error) {
+    setLiveState("disconnected", {
+      label: "未连接",
+      reason: describeNetworkError(error, settings, LIVE_TIMEOUT_MS),
+      version: null,
+      engine: null,
+      protocol: null,
+      endpoint,
+    });
+  } finally {
+    liveBusy = false;
+    els.liveChecked.textContent = `最近检查 ${new Date().toLocaleTimeString("zh-CN", { hour12: false })}`;
+  }
+}
+
+function startLivePolling() {
+  if (liveTimer) return;
+  void checkLiveStatus();
+  liveTimer = setInterval(() => {
+    if (document.visibilityState === "visible") void checkLiveStatus();
+  }, LIVE_INTERVAL_MS);
+}
+
 async function loadSettings() {
   const stored = await chrome.storage.local.get("settings");
   if (stored.settings) {
     const settings = normalizeSettings(stored.settings);
     render(settings);
-    setStatus(`已读取设置 · ${settings.host}:${settings.port}`, "");
+    setStatus(`已保存 · ${settings.host}:${settings.port}`, "");
   } else {
     render(DEFAULT_SETTINGS);
-    setStatus("使用默认设置（尚未保存）", "");
+    setStatus("默认设置 · 尚未保存", "");
   }
   await loadCookiePermission();
   await loadDownloadUiPermission();
@@ -292,6 +548,7 @@ async function saveSettings() {
 
   try {
     await chrome.storage.local.set({ settings });
+    void checkLiveStatus();
     const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
     const finalNotice = notice ? `${notice}其他设置已保存。` : "";
     setStatus(
@@ -437,7 +694,10 @@ async function testConnection() {
 }
 
 els.save.addEventListener("click", () => void saveSettings());
-els.test.addEventListener("click", () => void testConnection());
+els.test.addEventListener("click", () => {
+  showPane("connection");
+  void testConnection();
+});
 els.forwardCookies.addEventListener("change", refreshCookieHint);
 els.hideDownloadUi.addEventListener("change", refreshDownloadUiHint);
 els.diagRefresh.addEventListener("click", () => void loadDiagnostics());
@@ -469,6 +729,48 @@ els.grantDownloadUi.addEventListener("click", async () => {
   );
 });
 
+for (const item of document.querySelectorAll(".nav-item")) {
+  item.addEventListener("click", () => showPane(item.dataset.pane));
+}
+
+els.nav.addEventListener("keydown", (event) => {
+  const items = [...els.nav.querySelectorAll(".nav-item")];
+  const index = items.indexOf(document.activeElement);
+  if (index < 0) return;
+
+  let next = null;
+  if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+    next = (index + 1) % items.length;
+  } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+    next = (index - 1 + items.length) % items.length;
+  } else if (event.key === "Home") {
+    next = 0;
+  } else if (event.key === "End") {
+    next = items.length - 1;
+  }
+  if (next === null) return;
+
+  event.preventDefault();
+  items[next].focus();
+  showPane(items[next].dataset.pane);
+});
+
+window.addEventListener("hashchange", () => showPane(paneFromHash(), { updateHash: false }));
+
+els.liveRefresh.addEventListener("click", () => void checkLiveStatus());
+els.miniStatus.addEventListener("click", () => {
+  showPane("connection");
+  void checkLiveStatus();
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.settings) void checkLiveStatus();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") void checkLiveStatus();
+});
+
 for (const field of ERROR_FIELDS) {
   els[field].addEventListener("input", () => clearFieldError(field));
 }
@@ -483,11 +785,15 @@ chrome.permissions.onRemoved.addListener(() => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Enter" && !event.isComposing && event.target.tagName !== "TEXTAREA") {
-    event.preventDefault();
-    void saveSettings();
-  }
+  if (event.key !== "Enter" || event.isComposing) return;
+  if (event.target.tagName !== "INPUT" || event.target.type === "checkbox") return;
+  event.preventDefault();
+  void saveSettings();
 });
+
+els.appVersion.textContent = chrome.runtime.getManifest().version;
+showPane(paneFromHash(), { updateHash: false });
+startLivePolling();
 
 loadSettings().catch((error) => {
   setStatus(`读取设置失败：${error?.message || error}`, "bad");
