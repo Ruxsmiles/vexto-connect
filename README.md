@@ -20,6 +20,7 @@ Manifest V3 · Edge / Chrome 109+ · Firefox 115+ · GPL-3.0
 - **过滤规则**（仅自动接管）：站点允许 / 排除列表、最小文件大小、大小未知时的策略、重复下载保护窗口。
 - **隐藏下载列表**（默认开启，仅 Chrome / Edge）：接管尝试期间临时隐藏下载列表与气泡，回落到浏览器下载时恢复显示。
 - **实时状态面板**：选项页显示 Vexto 连接状态、版本、引擎、协议与最近检查时间。
+- **工具栏弹窗**：点击扩展图标即可查看连接状态、引擎、协议与端点，快速开关自动接管或打开设置。
 - **诊断记录**：保留最近 50 条交接结果，只记录主机与原因码，不记录 URL 查询串、Cookie、密钥或文件名。
 
 ## 工作原理
@@ -113,6 +114,19 @@ powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1
 - Vexto 接收：取消并清除浏览器下载，任务出现在 Vexto 中；
 - Vexto 拒绝、未运行、密钥不一致或超时：恢复浏览器下载，并通知具体原因。
 
+### 工具栏弹窗
+
+![工具栏弹窗](assets/popup.png)
+
+点击浏览器工具栏里的 Vexto Connect 图标，弹窗会显示：
+
+- 当前连接状态（已连接 / 未连接 / 引擎未启用 / 密钥不一致 / 扩展已停用）；
+- Vexto 版本、引擎、协议、端点与最近检查时间；
+- 「自动接管」快捷开关；
+- 「刷新状态」与「打开设置」入口。
+
+弹窗打开期间每 5 秒自动刷新一次。
+
 ### 右键下载
 
 在链接上右键选择「用 Vexto 下载」。这是显式操作，不受站点规则、大小或重复保护限制。
@@ -188,6 +202,9 @@ vexto-connect/
 ├── options.html      选项页
 ├── options.css
 ├── options.js
+├── popup.html        工具栏弹窗
+├── popup.css
+├── popup.js
 ├── icons/            扩展与通知图标
 ├── scripts/package.ps1          Chrome / Edge 打包
 ├── scripts/package-firefox.ps1  Firefox 打包
