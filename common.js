@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   minimumSizeMb: 0,
   unknownSizeTakeover: true,
   duplicateWindowSeconds: 10,
+  hideDownloadUi: false,
   siteRules: DEFAULT_SITE_RULES,
 });
 
@@ -77,6 +78,10 @@ function normalizeSettings(raw) {
       Number.isInteger(dupWindow) && dupWindow >= 0
         ? dupWindow
         : DEFAULT_SETTINGS.duplicateWindowSeconds,
+    hideDownloadUi:
+      typeof src.hideDownloadUi === "boolean"
+        ? src.hideDownloadUi
+        : DEFAULT_SETTINGS.hideDownloadUi,
     siteRules: {
       allow: Array.isArray(rules.allow)
         ? rules.allow.filter((rule) => typeof rule === "string" && rule)
@@ -187,6 +192,7 @@ function validateSettings(input) {
         Number.isInteger(dupWindow) && dupWindow >= 0
           ? dupWindow
           : DEFAULT_SETTINGS.duplicateWindowSeconds,
+      hideDownloadUi: Boolean(input?.hideDownloadUi),
       siteRules: { allow: allow.rules, block: block.rules },
     },
   };

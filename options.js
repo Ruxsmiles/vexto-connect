@@ -14,6 +14,10 @@ const els = {
   forwardCookies: $("forwardCookies"),
   cookieHint: $("cookie-hint"),
   grantCookies: $("grantCookies"),
+  hideDownloadUi: $("hideDownloadUi"),
+  hideDownloadUiRow: $("hideDownloadUiRow"),
+  downloadUiHint: $("download-ui-hint"),
+  grantDownloadUi: $("grantDownloadUi"),
   minimumSizeMb: $("minimumSizeMb"),
   unknownSizeTakeover: $("unknownSizeTakeover"),
   duplicateWindowSeconds: $("duplicateWindowSeconds"),
@@ -37,9 +41,11 @@ const ERROR_FIELDS = [
   "blockSites",
 ];
 const COOKIE_ORIGINS = ["*://*/*"];
+const DOWNLOAD_UI_PERMISSION = { permissions: ["downloads.ui"] };
 
 let busy = false;
 let cookieHostGranted = false;
+let downloadUiGranted = false;
 
 function readForm() {
   return {
@@ -53,6 +59,7 @@ function readForm() {
     minimumSizeMb: els.minimumSizeMb.value,
     unknownSizeTakeover: els.unknownSizeTakeover.checked,
     duplicateWindowSeconds: els.duplicateWindowSeconds.value,
+    hideDownloadUi: els.hideDownloadUi.checked,
     allowSitesText: els.allowSites.value,
     blockSitesText: els.blockSites.value,
   };
@@ -69,6 +76,7 @@ function render(settings) {
   els.minimumSizeMb.value = String(settings.minimumSizeMb);
   els.unknownSizeTakeover.checked = settings.unknownSizeTakeover;
   els.duplicateWindowSeconds.value = String(settings.duplicateWindowSeconds);
+  els.hideDownloadUi.checked = settings.hideDownloadUi;
   els.allowSites.value = settings.siteRules.allow.join("\n");
   els.blockSites.value = settings.siteRules.block.join("\n");
 }
@@ -144,6 +152,36 @@ async function loadCookiePermission() {
   refreshCookieHint();
 }
 
+function refreshDownloadUiHint() {
+  if (!els.hideDownloadUi.checked) {
+    els.downloadUiHint.textContent =
+      "开启后隐藏 Edge 的下载列表/气泡，接管时不再弹出；浏览器回落的下载也不会显示列表。首次开启需要授权「下载 UI」权限。";
+  } else if (downloadUiGranted) {
+    els.downloadUiHint.textContent = "已授权：浏览器下载列表已隐藏（全局生效）。";
+  } else {
+    els.downloadUiHint.textContent =
+      "尚未授权「下载 UI」权限：保存时会请求权限；未授权时不会隐藏下载列表。";
+  }
+  els.grantDownloadUi.hidden = !els.hideDownloadUi.checked || downloadUiGranted;
+}
+
+async function loadDownloadUiPermission() {
+  const supported = typeof chrome.downloads?.setUiOptions === "function";
+  els.hideDownloadUiRow.hidden = !supported;
+  els.downloadUiHint.hidden = !supported;
+  if (!supported) {
+    els.grantDownloadUi.hidden = true;
+    return;
+  }
+  try {
+    downloadUiGranted = await chrome.permissions.contains(DOWNLOAD_UI_PERMISSION);
+  } catch (error) {
+    downloadUiGranted = false;
+    console.warn("检查下载 UI 权限失败：", error);
+  }
+  refreshDownloadUiHint();
+}
+
 function renderDiagnostics(list) {
   if (!Array.isArray(list) || !list.length) {
     els.diagnostics.textContent = "暂无诊断事件。";
@@ -192,6 +230,7 @@ async function loadSettings() {
     setStatus("使用默认设置（尚未保存）", "");
   }
   await loadCookiePermission();
+  await loadDownloadUiPermission();
   void loadDiagnostics();
 }
 
@@ -205,20 +244,42 @@ async function saveSettings() {
   }
 
   let notice = "";
+  const needCookie = settings.forwardCookies && !cookieHostGranted;
+  const needDownloadUi = settings.hideDownloadUi && !downloadUiGranted;
+
   // 权限申请必须在用户手势里发起：这里之前只有同步代码。
-  if (settings.forwardCookies && !cookieHostGranted) {
+  if (needCookie || needDownloadUi) {
+    const request = {};
+    if (needCookie) request.origins = COOKIE_ORIGINS;
+    if (needDownloadUi) request.permissions = ["downloads.ui"];
     try {
-      cookieHostGranted = await chrome.permissions.request({ origins: COOKIE_ORIGINS });
+      await chrome.permissions.request(request);
     } catch (error) {
-      cookieHostGranted = false;
-      console.warn("请求 Cookie 权限失败：", error);
+      console.warn("请求权限失败：", error);
     }
-    if (!cookieHostGranted) {
-      settings.forwardCookies = false;
-      els.forwardCookies.checked = false;
-      notice = "未获得全站 Cookie 权限，Cookie 转发已关闭；其他设置已保存。";
+    if (needCookie) {
+      cookieHostGranted = await chrome.permissions
+        .contains({ origins: COOKIE_ORIGINS })
+        .catch(() => false);
+      if (!cookieHostGranted) {
+        settings.forwardCookies = false;
+        els.forwardCookies.checked = false;
+        notice += "未获得全站 Cookie 权限，Cookie 转发已关闭；";
+      }
     }
-  } else if (!settings.forwardCookies && cookieHostGranted) {
+    if (needDownloadUi) {
+      downloadUiGranted = await chrome.permissions
+        .contains(DOWNLOAD_UI_PERMISSION)
+        .catch(() => false);
+      if (!downloadUiGranted) {
+        settings.hideDownloadUi = false;
+        els.hideDownloadUi.checked = false;
+        notice += "未获得下载 UI 权限，隐藏下载列表已关闭；";
+      }
+    }
+  }
+
+  if (!settings.forwardCookies && cookieHostGranted) {
     try {
       await chrome.permissions.remove({ origins: COOKIE_ORIGINS });
       cookieHostGranted = false;
@@ -227,13 +288,15 @@ async function saveSettings() {
     }
   }
   refreshCookieHint();
+  refreshDownloadUiHint();
 
   try {
     await chrome.storage.local.set({ settings });
     const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+    const finalNotice = notice ? `${notice}其他设置已保存。` : "";
     setStatus(
-      notice || `已保存 · ${settings.host}:${settings.port} · ${time}`,
-      notice ? "warn" : "ok"
+      finalNotice || `已保存 · ${settings.host}:${settings.port} · ${time}`,
+      finalNotice ? "warn" : "ok"
     );
   } catch (error) {
     setStatus(`保存失败：${error?.message || error}`, "bad");
@@ -376,6 +439,7 @@ async function testConnection() {
 els.save.addEventListener("click", () => void saveSettings());
 els.test.addEventListener("click", () => void testConnection());
 els.forwardCookies.addEventListener("change", refreshCookieHint);
+els.hideDownloadUi.addEventListener("change", refreshDownloadUiHint);
 els.diagRefresh.addEventListener("click", () => void loadDiagnostics());
 els.diagClear.addEventListener("click", () => void clearDiagnostics());
 els.grantCookies.addEventListener("click", async () => {
@@ -391,13 +455,32 @@ els.grantCookies.addEventListener("click", async () => {
     cookieHostGranted ? "ok" : "warn"
   );
 });
+els.grantDownloadUi.addEventListener("click", async () => {
+  try {
+    downloadUiGranted = await chrome.permissions.request(DOWNLOAD_UI_PERMISSION);
+  } catch (error) {
+    downloadUiGranted = false;
+    console.warn("请求下载 UI 权限失败：", error);
+  }
+  refreshDownloadUiHint();
+  setStatus(
+    downloadUiGranted ? "已授权下载 UI 权限。" : "未获得下载 UI 权限。",
+    downloadUiGranted ? "ok" : "warn"
+  );
+});
 
 for (const field of ERROR_FIELDS) {
   els[field].addEventListener("input", () => clearFieldError(field));
 }
 
-chrome.permissions.onAdded.addListener(() => void loadCookiePermission());
-chrome.permissions.onRemoved.addListener(() => void loadCookiePermission());
+chrome.permissions.onAdded.addListener(() => {
+  void loadCookiePermission();
+  void loadDownloadUiPermission();
+});
+chrome.permissions.onRemoved.addListener(() => {
+  void loadCookiePermission();
+  void loadDownloadUiPermission();
+});
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && !event.isComposing && event.target.tagName !== "TEXTAREA") {

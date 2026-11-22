@@ -1,6 +1,6 @@
 # Vexto Connect
 
-Vexto 的浏览器接管扩展。当前处于 **M4**：设置、连接测试、右键交接、自动接管、可选转发与过滤、诊断、协议协商与打包均已实现。
+Vexto 的浏览器接管扩展。当前处于 **M4（0.6.0）**：设置、连接测试、右键交接、自动接管、可选转发与过滤、诊断、协议协商、隐藏浏览器下载列表与打包均已实现。
 
 技术选型：Manifest V3 + 纯静态 HTML/CSS/JS，无 npm、无构建链。
 
@@ -31,7 +31,8 @@ vexto-connect/
 - 使用 `downloads.onCreated` 而不是 `onDeterminingFilename`：Edge 158 实测后者在 worker 被回收后不会唤醒它，会漏接管；`onCreated` 能可靠唤醒 worker；
 - 诊断：最近 50 条交接结果，选项页查看 / 清空；只记录主机与原因码，不记录 URL 查询串、Cookie 或密钥；
 - 协议协商：探测 `/v1/ping`，可用时走 `/v1/add`（`X-Vexto-Client`），404 自动回落兼容 `/add`；测试连接显示当前协议；
-- 点击失败通知会打开选项页；Cookie 权限缺失时选项页提供「授权全站 Cookie」按钮。
+- 点击失败通知会打开选项页；Cookie 权限缺失时选项页提供「授权全站 Cookie」按钮；
+- 可选隐藏浏览器下载列表（全局，需 `downloads.ui` 权限），接管时不再弹出 Edge 的下载栏 / 气泡；实现方式与 Rayburst Connect 的 `hideDownloadBar` 一致。
 
 ## 后续实现范围
 
@@ -51,7 +52,7 @@ vexto-connect/
 - 可选 Bearer 密钥，与 Vexto 设置保持一致。
 - 不注册 native messaging；Vexto 必须在托盘运行。
 - Cookie 转发默认关闭；首次开启时申请可选的全站 Cookie 权限，只发送给本机 Vexto，不写日志。
-- 必需权限：`storage`、`contextMenus`、`downloads`、`notifications`、`cookies`；全站 host 权限为可选。
+- 必需权限：`storage`、`contextMenus`、`downloads`、`notifications`、`cookies`；可选权限：`downloads.ui`（隐藏下载列表）、全站 host（Cookie 转发）。
 
 ## 开发文档
 

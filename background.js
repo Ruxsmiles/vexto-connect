@@ -68,7 +68,21 @@ async function loadSettings() {
   return settingsReady;
 }
 
-void settingsReady.then((settings) => refreshProtocolMode(settings));
+void settingsReady.then((settings) => {
+  syncDownloadUi(settings);
+  refreshProtocolMode(settings);
+});
+
+async function syncDownloadUi(settings) {
+  if (typeof chrome.downloads?.setUiOptions !== "function") return;
+  try {
+    const granted = await chrome.permissions.contains({ permissions: ["downloads.ui"] });
+    if (!granted) return;
+    await chrome.downloads.setUiOptions({ enabled: !settings.hideDownloadUi });
+  } catch (error) {
+    console.warn("设置下载列表显示失败：", error?.message || error);
+  }
+}
 
 async function refreshProtocolMode(settings) {
   const cached = await readProtocolMode();
@@ -102,6 +116,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !changes.settings) return;
   settingsFromChange = true;
   settingsCache = normalizeSettings(changes.settings.newValue);
+  void syncDownloadUi(settingsCache);
   void refreshMenu();
 });
 
