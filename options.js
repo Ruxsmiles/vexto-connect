@@ -26,7 +26,6 @@ const els = {
   save: $("save"),
   test: $("test"),
   status: $("status"),
-  detail: $("detail"),
   diagRefresh: $("diag-refresh"),
   diagClear: $("diag-clear"),
   diagnostics: $("diagnostics"),
@@ -64,6 +63,8 @@ const DOWNLOAD_UI_PERMISSION = { permissions: ["downloads.ui"] };
 let busy = false;
 let cookieHostGranted = false;
 let downloadUiGranted = false;
+let savedSnapshot = null;
+let dirty = false;
 
 function readForm() {
   return {
@@ -104,19 +105,24 @@ function setStatus(text, kind = "") {
   els.status.className = `status ${kind}`.trim();
 }
 
-function setDetail(lines) {
-  if (!lines.length) {
-    els.detail.textContent = "";
-    els.detail.classList.add("hidden");
-    return;
-  }
-  els.detail.textContent = lines.join("\n");
-  els.detail.classList.remove("hidden");
+function formSnapshot() {
+  return JSON.stringify(readForm());
+}
+
+function refreshSaveState() {
+  els.save.disabled = busy || !dirty;
+}
+
+function updateDirtyState() {
+  const next = savedSnapshot !== null && formSnapshot() !== savedSnapshot;
+  if (next === dirty) return;
+  dirty = next;
+  refreshSaveState();
 }
 
 function setBusy(value) {
   busy = value;
-  els.save.disabled = value;
+  refreshSaveState();
   els.test.disabled = value;
   els.test.textContent = value ? "测试中…" : "测试连接";
 }
@@ -485,13 +491,16 @@ async function loadSettings() {
     render(DEFAULT_SETTINGS);
     setStatus("默认设置 · 尚未保存", "");
   }
+  savedSnapshot = formSnapshot();
+  dirty = false;
+  refreshSaveState();
   await loadCookiePermission();
   await loadDownloadUiPermission();
   void loadDiagnostics();
 }
 
 async function saveSettings() {
-  if (busy) return;
+  if (busy || !dirty) return;
   const { ok, errors, settings } = validateSettings(readForm());
   showFieldErrors(errors);
   if (!ok) {
@@ -548,6 +557,9 @@ async function saveSettings() {
 
   try {
     await chrome.storage.local.set({ settings });
+    savedSnapshot = formSnapshot();
+    dirty = false;
+    refreshSaveState();
     void checkLiveStatus();
     const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
     const finalNotice = notice ? `${notice}其他设置已保存。` : "";
@@ -566,19 +578,11 @@ async function testConnection() {
   showFieldErrors(errors);
   if (!ok) {
     setStatus("无法测试：请先修正标红的字段。", "bad");
-    setDetail([]);
     return;
   }
 
-  const lines = [];
-  const log = (line) => {
-    lines.push(line);
-    setDetail(lines);
-  };
-
   setBusy(true);
   setStatus("正在连接 Vexto…", "");
-  setDetail([]);
 
   try {
     // 1) /ping：产品发现，Vexto 侧不校验鉴权。
@@ -586,7 +590,6 @@ async function testConnection() {
     try {
       const response = await vextoFetch(settings, "/ping");
       const body = await readJson(response);
-      log(`GET /ping → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`);
       if (!response.ok) {
         setStatus(describeHttpError(response.status), "bad");
         return;
@@ -597,7 +600,6 @@ async function testConnection() {
       }
       ping = body;
     } catch (error) {
-      log("GET /ping → 网络失败");
       setStatus(describeNetworkError(error, settings), "bad");
       return;
     }
@@ -607,7 +609,6 @@ async function testConnection() {
     try {
       const response = await vextoFetch(settings, "/version");
       const body = await readJson(response);
-      log(`GET /version → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`);
       if (!response.ok) {
         setStatus(describeHttpError(response.status), "bad");
         return;
@@ -618,7 +619,6 @@ async function testConnection() {
       }
       version = body;
     } catch (error) {
-      log("GET /version → 网络失败");
       setStatus(describeNetworkError(error, settings), "bad");
       return;
     }
@@ -631,9 +631,6 @@ async function testConnection() {
         headers: vextoHeaders(settings),
       });
       const body = await readJson(response);
-      log(
-        `GET /downloads/capabilities → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`
-      );
       if (response.status === 401) {
         setStatus(`已连接 Vexto ${ping.version}，但${describeHttpError(401)}`, "bad");
         return;
@@ -644,7 +641,6 @@ async function testConnection() {
       }
       capabilities = body;
     } catch (error) {
-      log("GET /downloads/capabilities → 网络失败");
       setStatus(describeNetworkError(error, settings), "bad");
       return;
     }
@@ -657,12 +653,11 @@ async function testConnection() {
         timeoutMs: 1500,
       });
       const body = await readJson(response);
-      log(`GET /v1/ping → HTTP ${response.status}${body ? ` ${JSON.stringify(body)}` : ""}`);
       if (response.ok && body && typeof body.protocol === "number" && body.protocol >= 1) {
         v1 = body;
       }
-    } catch (error) {
-      log("GET /v1/ping → 网络失败");
+    } catch {
+      // /v1 不存在时继续用兼容接口
     }
     if (v1) {
       await writeProtocolMode("v1", v1.protocol);
@@ -773,6 +768,26 @@ document.addEventListener("visibilitychange", () => {
 
 for (const field of ERROR_FIELDS) {
   els[field].addEventListener("input", () => clearFieldError(field));
+}
+
+const FORM_FIELDS = [
+  "enabled",
+  "autoTakeover",
+  "host",
+  "port",
+  "secret",
+  "forwardHeaders",
+  "forwardCookies",
+  "hideDownloadUi",
+  "minimumSizeMb",
+  "unknownSizeTakeover",
+  "duplicateWindowSeconds",
+  "allowSites",
+  "blockSites",
+];
+for (const field of FORM_FIELDS) {
+  els[field].addEventListener("input", updateDirtyState);
+  els[field].addEventListener("change", updateDirtyState);
 }
 
 chrome.permissions.onAdded.addListener(() => {

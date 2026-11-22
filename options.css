@@ -692,9 +692,13 @@ textarea.invalid:focus {
   font-size: 12px;
 }
 
-.btn:disabled {
-  opacity: .55;
-  cursor: default;
+.btn:disabled,
+.btn:disabled:hover {
+  background: var(--input);
+  border-color: var(--border);
+  color: var(--faint);
+  opacity: 1;
+  cursor: not-allowed;
   transform: none;
 }
 
@@ -737,7 +741,7 @@ textarea.invalid:focus {
   flex-wrap: wrap;
 }
 
-/* ── 详情与诊断 ───────────────────────────────────────── */
+/* ── 诊断 ─────────────────────────────────────────────── */
 
 .detail {
   margin: 0;
@@ -751,8 +755,6 @@ textarea.invalid:focus {
   font: 12px/1.55 Consolas, "Cascadia Mono", monospace;
   white-space: pre-wrap;
 }
-
-.detail.hidden { display: none; }
 
 .pane-log .card {
   display: flex;
