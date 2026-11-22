@@ -42,6 +42,8 @@ vexto-connect/
 
 ## 加载（开发）
 
+浏览器支持：Edge 109+ / Chrome 109+ 等桌面 Chromium 内核浏览器；Edge 158 与 Chrome 158 均已实测。
+
 1. 启动 Vexto（托盘运行，插件接管开启，默认端口 29110）。
 2. 打开 `edge://extensions` 或 `chrome://extensions`，开启开发人员模式。
 3. 「加载解压缩的扩展」，选择本项目目录。
