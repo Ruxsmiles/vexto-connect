@@ -69,19 +69,40 @@ async function loadSettings() {
 }
 
 void settingsReady.then((settings) => {
-  syncDownloadUi(settings);
+  syncDownloadUi();
   refreshProtocolMode(settings);
 });
 
-async function syncDownloadUi(settings) {
-  if (typeof chrome.downloads?.setUiOptions !== "function") return;
-  try {
-    const granted = await chrome.permissions.contains({ permissions: ["downloads.ui"] });
-    if (!granted) return;
-    await chrome.downloads.setUiOptions({ enabled: !settings.hideDownloadUi });
-  } catch (error) {
-    console.warn("设置下载列表显示失败：", error?.message || error);
-  }
+let downloadUiQueue = Promise.resolve();
+
+function setDownloadUi(enabled) {
+  downloadUiQueue = downloadUiQueue
+    .then(async () => {
+      if (typeof chrome.downloads?.setUiOptions !== "function") return;
+      const granted = await chrome.permissions.contains({ permissions: ["downloads.ui"] });
+      if (!granted) return;
+      await chrome.downloads.setUiOptions({ enabled });
+    })
+    .catch((error) => console.warn("设置下载列表显示失败：", error?.message || error));
+  return downloadUiQueue;
+}
+
+// 并发接管时只有最后一个结束才恢复列表
+let activeTakeovers = 0;
+
+function beginDownloadUiHide() {
+  activeTakeovers += 1;
+  void setDownloadUi(false);
+}
+
+function endDownloadUiHide() {
+  activeTakeovers = Math.max(0, activeTakeovers - 1);
+  if (activeTakeovers === 0) void setDownloadUi(true);
+}
+
+async function syncDownloadUi() {
+  // 隐藏只在接管尝试期间生效；启动/设置变更时恢复浏览器下载列表
+  if (activeTakeovers === 0) await setDownloadUi(true);
 }
 
 async function refreshProtocolMode(settings) {
@@ -116,7 +137,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !changes.settings) return;
   settingsFromChange = true;
   settingsCache = normalizeSettings(changes.settings.newValue);
-  void syncDownloadUi(settingsCache);
+  void syncDownloadUi();
   void refreshMenu();
 });
 
@@ -270,6 +291,7 @@ async function reportFailure(headline, reason, fallbackUrl) {
 function startBrowserDownload(url) {
   // 标记为自己的下载，避免开启自动接管后被再次拦截
   rememberSelfDownload(url);
+  if (activeTakeovers === 0) void setDownloadUi(true);
   chrome.downloads.download({ url, saveAs: false }, () => {
     if (chrome.runtime.lastError) {
       notify(
@@ -489,6 +511,8 @@ async function cookieHeaderFor(url) {
 async function beginTakeover(item, settings) {
   markHandled(item.id);
   const host = hostnameOf(item.finalUrl || item.url);
+  const hideUi = Boolean(settings.hideDownloadUi);
+  if (hideUi) beginDownloadUiHide();
 
   let settled = false;
   // 安全网：任何路径卡住都必须在 deadline 后恢复浏览器下载
@@ -591,6 +615,7 @@ async function beginTakeover(item, settings) {
     await reportTakeoverFailure("自动接管出错，已恢复浏览器下载", String(error?.message || error));
   } finally {
     clearTimeout(guard);
+    if (hideUi) endDownloadUiHide();
   }
 }
 

@@ -173,9 +173,9 @@ async function loadCookiePermission() {
 function refreshDownloadUiHint() {
   if (!els.hideDownloadUi.checked) {
     els.downloadUiHint.textContent =
-      "开启后隐藏 Edge 的下载列表/气泡，接管时不再弹出；浏览器回落的下载也不会显示列表。首次开启需要授权「下载 UI」权限。";
+      "开启后仅在接管尝试期间隐藏下载列表/气泡；回落到浏览器下载时会恢复显示。首次开启需要授权「下载 UI」权限。";
   } else if (downloadUiGranted) {
-    els.downloadUiHint.textContent = "已授权：浏览器下载列表已隐藏（全局生效）。";
+    els.downloadUiHint.textContent = "已授权：接管尝试期间隐藏下载列表，结束后恢复。";
   } else {
     els.downloadUiHint.textContent =
       "尚未授权「下载 UI」权限：保存时会请求权限；未授权时不会隐藏下载列表。";
