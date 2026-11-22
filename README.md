@@ -2,9 +2,9 @@
 
 把浏览器下载交给本机 Vexto，让下载回到桌面下载器。
 
-Vexto Connect 是 [Vexto](https://github.com/Boom-Sumber/vexto) 的配套浏览器扩展。安装后，网页里的下载和链接右键菜单可以直接进入 Vexto 的下载队列，由 aria2c 接管；Vexto 未运行、拒绝接收或响应超时时，扩展会自动恢复浏览器下载并说明原因，不丢任务。
+Vexto Connect 是 [Vexto](https://github.com/Ruxsmiles/vexto) 的配套浏览器扩展。安装后，网页里的下载和链接右键菜单可以直接进入 Vexto 的下载队列，由 aria2c 接管；Vexto 未运行、拒绝接收或响应超时时，扩展会自动恢复浏览器下载并说明原因，不丢任务。
 
-**项目仓库**：<https://github.com/Boom-Sumber/vexto-connect>
+**项目仓库**：<https://github.com/Ruxsmiles/vexto-connect>
 
 **当前版本**：0.8.1 · Manifest V3 · Edge / Chrome 109+ · Firefox 115+ · GPL-3.0
 
@@ -29,19 +29,19 @@ Vexto Connect 是 [Vexto](https://github.com/Boom-Sumber/vexto) 的配套浏览�
 
 Vexto Connect 在 GitHub 开源发布：
 
-- **项目仓库**：<https://github.com/Boom-Sumber/vexto-connect>
-- **下载源码 ZIP**：<https://github.com/Boom-Sumber/vexto-connect/archive/refs/heads/main.zip>
+- **项目仓库**：<https://github.com/Ruxsmiles/vexto-connect>
+- **下载源码 ZIP**：<https://github.com/Ruxsmiles/vexto-connect/archive/refs/heads/main.zip>
 - **使用 Git**：
 
 ```bash
-git clone https://github.com/Boom-Sumber/vexto-connect.git
+git clone https://github.com/Ruxsmiles/vexto-connect.git
 ```
 
 下载后解压，得到包含 `manifest.json` 的目录，然后按下面的步骤加载。
 
 ### 前置条件
 
-1. 安装并运行 [Vexto](https://github.com/Boom-Sumber/vexto)（建议 0.3.11 或更高版本）。
+1. 安装并运行 [Vexto](https://github.com/Ruxsmiles/vexto)（建议 0.3.11 或更高版本）。
 2. 在 Vexto 设置中开启「插件接管」，确认端口（默认 `29110`）。
 3. 如果 Vexto 设置了「插件密钥」，稍后在扩展选项页填写相同密钥。
 
@@ -181,7 +181,7 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 
 ## 开发与反馈
 
-- 源码、Issue、Pull Request：<https://github.com/Boom-Sumber/vexto-connect>
+- 源码、Issue、Pull Request：<https://github.com/Ruxsmiles/vexto-connect>
 - Manifest V3，纯静态 HTML / CSS / JS，**无 npm、无构建步骤、无前端框架**。
 - 修改后在扩展管理页点击「重新加载」即可生效。
 - 打包脚本：
@@ -197,10 +197,10 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 
 ## 许可
 
-[GNU General Public License v3.0](LICENSE)，与 [Vexto](https://github.com/Boom-Sumber/vexto) 主项目一致。
+[GNU General Public License v3.0](LICENSE)，与 [Vexto](https://github.com/Ruxsmiles/vexto) 主项目一致。
 
 ## 致谢
 
-感谢 [Vexto](https://github.com/Boom-Sumber/vexto) 提供桌面端与下载引擎。
+感谢 [Vexto](https://github.com/Ruxsmiles/vexto) 提供桌面端与下载引擎。
 
 接口兼容 Vexto 现有的 Rayburst Connect 兼容层，便于存量用户平滑迁移。
