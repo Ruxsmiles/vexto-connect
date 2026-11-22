@@ -75,12 +75,29 @@ void settingsReady.then((settings) => {
 
 let downloadUiQueue = Promise.resolve();
 
+let downloadUiPermission = null;
+
+async function hasDownloadUiPermission() {
+  if (downloadUiPermission === null) {
+    downloadUiPermission = await chrome.permissions
+      .contains({ permissions: ["downloads.ui"] })
+      .catch(() => false);
+  }
+  return downloadUiPermission;
+}
+
+chrome.permissions.onAdded?.addListener((added) => {
+  if (added.permissions?.includes("downloads.ui")) downloadUiPermission = true;
+});
+chrome.permissions.onRemoved?.addListener((removed) => {
+  if (removed.permissions?.includes("downloads.ui")) downloadUiPermission = false;
+});
+
 function setDownloadUi(enabled) {
   downloadUiQueue = downloadUiQueue
     .then(async () => {
       if (typeof chrome.downloads?.setUiOptions !== "function") return;
-      const granted = await chrome.permissions.contains({ permissions: ["downloads.ui"] });
-      if (!granted) return;
+      if (!(await hasDownloadUiPermission())) return;
       await chrome.downloads.setUiOptions({ enabled });
     })
     .catch((error) => console.warn("设置下载列表显示失败：", error?.message || error));
@@ -137,6 +154,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !changes.settings) return;
   settingsFromChange = true;
   settingsCache = normalizeSettings(changes.settings.newValue);
+  // 保存设置时重查授权，避免错过 permissions.onAdded
+  downloadUiPermission = null;
   void syncDownloadUi();
   void refreshMenu();
 });
@@ -379,46 +398,55 @@ async function maybeTakeOver(item) {
     return;
   }
 
-  // 先暂停，尽量在写入数据前停住；50ms 后再复查 byExtensionId
-  chrome.downloads.pause(item.id, () => {
-    void chrome.runtime.lastError;
-  });
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  let fresh = item;
-  try {
-    [fresh] = await chrome.downloads.search({ id: item.id });
-  } catch {
-    fresh = null;
-  }
-  if (!fresh) return;
+  // 尽早隐藏下载列表：浏览器通常在下载创建后几十毫秒内就画出下载栏，
+  // 若等到 50ms 复查之后才隐藏，下载栏往往已经出现。
+  const hideUi = Boolean(settings.hideDownloadUi);
+  if (hideUi) beginDownloadUiHide();
 
-  const freshDecision = autoTakeOverDecision(fresh, settings);
-  if (freshDecision) {
-    resumeDownload(item.id);
-    if (DIAG_SKIP_REASONS.has(freshDecision)) {
+  try {
+    // 先暂停，尽量在写入数据前停住；50ms 后再复查 byExtensionId
+    chrome.downloads.pause(item.id, () => {
+      void chrome.runtime.lastError;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    let fresh = item;
+    try {
+      [fresh] = await chrome.downloads.search({ id: item.id });
+    } catch {
+      fresh = null;
+    }
+    if (!fresh) return;
+
+    const freshDecision = autoTakeOverDecision(fresh, settings);
+    if (freshDecision) {
+      resumeDownload(item.id);
+      if (DIAG_SKIP_REASONS.has(freshDecision)) {
+        addDiagnostic({
+          source: "auto",
+          outcome: "skipped",
+          host: hostnameOf(fresh.url),
+          reason: freshDecision,
+        });
+      }
+      return;
+    }
+
+    if (await isDuplicateHandoff(fresh, settings)) {
+      resumeDownload(item.id);
       addDiagnostic({
         source: "auto",
         outcome: "skipped",
         host: hostnameOf(fresh.url),
-        reason: freshDecision,
+        reason: "duplicate",
       });
+      console.info("Vexto Connect：重复下载，跳过接管");
+      return;
     }
-    return;
+    await rememberHandoff(fresh, settings);
+    await beginTakeover(fresh, settings);
+  } finally {
+    if (hideUi) endDownloadUiHide();
   }
-
-  if (await isDuplicateHandoff(fresh, settings)) {
-    resumeDownload(item.id);
-    addDiagnostic({
-      source: "auto",
-      outcome: "skipped",
-      host: hostnameOf(fresh.url),
-      reason: "duplicate",
-    });
-    console.info("Vexto Connect：重复下载，跳过接管");
-    return;
-  }
-  await rememberHandoff(fresh, settings);
-  await beginTakeover(fresh, settings);
 }
 
 function wasHandled(id) {
@@ -511,8 +539,6 @@ async function cookieHeaderFor(url) {
 async function beginTakeover(item, settings) {
   markHandled(item.id);
   const host = hostnameOf(item.finalUrl || item.url);
-  const hideUi = Boolean(settings.hideDownloadUi);
-  if (hideUi) beginDownloadUiHide();
 
   let settled = false;
   // 安全网：任何路径卡住都必须在 deadline 后恢复浏览器下载
@@ -615,7 +641,6 @@ async function beginTakeover(item, settings) {
     await reportTakeoverFailure("自动接管出错，已恢复浏览器下载", String(error?.message || error));
   } finally {
     clearTimeout(guard);
-    if (hideUi) endDownloadUiHide();
   }
 }
 
