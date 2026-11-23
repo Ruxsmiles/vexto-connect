@@ -6,7 +6,7 @@ Vexto Connect 是 [Vexto](https://github.com/Ruxsmiles/vexto) 的配套浏览器
 
 **项目仓库**：<https://github.com/Ruxsmiles/vexto-connect>
 
-**当前版本**：0.8.1 · Manifest V3 · Edge / Chrome 109+ · Firefox 115+ · GPL-3.0
+**当前版本**：0.8.2 · Manifest V3 · Edge / Chrome 109+ · Firefox 128+ · GPL-3.0
 
 ![Vexto Connect 设置页](assets/options-page.png)
 
@@ -120,7 +120,7 @@ powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1
 |---|---|
 | Microsoft Edge 109+ | 支持，已在 Edge 158 完整实测 |
 | Google Chrome 109+ | 支持，已在 Chrome 158 完整实测 |
-| Mozilla Firefox 115+ | 支持，已在 Firefox 160 实测（自动接管、回落、诊断） |
+| Mozilla Firefox 128+ | 支持，已在 Firefox 160 实测（自动接管、回落、诊断） |
 | Brave / Opera / Vivaldi 等 Chromium 浏览器 | 理论可用，未逐一实测 |
 | Safari | 不支持（扩展模型与下载 API 不同） |
 | 移动端浏览器 | 不支持（移动版 Chrome / Edge 不支持扩展） |
