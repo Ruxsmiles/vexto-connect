@@ -1,11 +1,12 @@
 # 打包扩展为可上传的 zip（不依赖 npm / 构建工具）。
+param([string]$OutputName = "")
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot
 $manifest = Get-Content (Join-Path $root "manifest.json") -Raw | ConvertFrom-Json
 $version = $manifest.version
 $dist = Join-Path $root "dist"
-$zip = Join-Path $dist "vexto-connect-$version.zip"
+$zip = if ($OutputName) { Join-Path $dist $OutputName } else { Join-Path $dist "vexto-connect-$version.zip" }
 $staging = Join-Path $env:TEMP "vexto-connect-package-$version"
 
 # Validate the locales first so a broken messages.json never gets packaged.

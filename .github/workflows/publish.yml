@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 concurrency:
@@ -37,7 +37,19 @@ jobs:
         shell: pwsh
         run: |
           pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/package.ps1
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/package-chrome.ps1
           pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/package-firefox.ps1
+
+      # The Chrome package keeps a fixed name so
+      # /releases/latest/download/vexto-connect-chrome.zip always points to the
+      # newest build. All three packages are attached to the release.
+      - name: Attach packages to release
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" dist/*.zip --clobber
 
       - uses: actions/upload-artifact@v4
         with:
@@ -64,7 +76,7 @@ jobs:
         if: env.EDGE_API_KEY != '' && env.EDGE_CLIENT_ID != '' && env.EDGE_PRODUCT_ID != ''
         run: |
           set -euo pipefail
-          ZIP=$(ls dist/vexto-connect-*.zip | grep -v firefox | head -1)
+          ZIP=$(ls dist/vexto-connect-*.zip | grep -v firefox | grep -v chrome | head -1)
           BASE="https://api.addons.microsoftedge.microsoft.com/v1/products/${EDGE_PRODUCT_ID}"
           AUTH=(-H "Authorization: ApiKey ${EDGE_API_KEY}" -H "X-ClientID: ${EDGE_CLIENT_ID}")
           HEADERS="$RUNNER_TEMP/edge-headers.txt"
@@ -153,7 +165,7 @@ jobs:
         if: env.CHROME_ITEM_ID != '' && env.CHROME_CLIENT_ID != '' && env.CHROME_CLIENT_SECRET != '' && env.CHROME_REFRESH_TOKEN != ''
         run: |
           set -euo pipefail
-          ZIP=$(ls dist/vexto-connect-*.zip | grep -v firefox | head -1)
+          ZIP="dist/vexto-connect-chrome.zip"
 
           TOKEN=$(curl -sSf https://oauth2.googleapis.com/token \
             -d "client_id=${CHROME_CLIENT_ID}" \
