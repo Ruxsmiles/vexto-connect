@@ -1,0 +1,727 @@
+{
+  "extName": {
+    "message": "Vexto Connect"
+  },
+  "extDescription": {
+    "message": "把浏览器下载交给本机 Vexto"
+  },
+  "statusChecking": {
+    "message": "检查中…"
+  },
+  "statusConnected": {
+    "message": "已连接"
+  },
+  "statusDisconnected": {
+    "message": "未连接"
+  },
+  "statusServiceError": {
+    "message": "服务异常"
+  },
+  "statusNotVexto": {
+    "message": "不是 Vexto"
+  },
+  "statusSecretMismatch": {
+    "message": "密钥不一致"
+  },
+  "statusEngineOff": {
+    "message": "引擎未启用"
+  },
+  "statusDisabled": {
+    "message": "扩展已停用"
+  },
+  "statusUnknown": {
+    "message": "未知"
+  },
+  "engineReady": {
+    "message": "就绪"
+  },
+  "engineInactive": {
+    "message": "未启用"
+  },
+  "protocolV1": {
+    "message": "协议 v1"
+  },
+  "protocolCompat": {
+    "message": "兼容接口"
+  },
+  "protocolCompatVersion": {
+    "message": "兼容 v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "protocolCompatPlain": {
+    "message": "兼容"
+  },
+  "protocolV1Long": {
+    "message": "协议 v1（X-Vexto-Client）"
+  },
+  "protocolCompatLong": {
+    "message": "兼容协议 v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "errHostRequired": {
+    "message": "请填写主机地址。"
+  },
+  "errHostLoopback": {
+    "message": "只允许本机回环地址：127.0.0.1 或 localhost。"
+  },
+  "errPortRequired": {
+    "message": "请填写端口。"
+  },
+  "errPortRange": {
+    "message": "端口必须是 1024–65535 之间的整数。"
+  },
+  "errMinSize": {
+    "message": "最小文件大小必须是不小于 0 的数字（MB）。"
+  },
+  "errDupWindow": {
+    "message": "重复保护窗口必须是不小于 0 的整数（秒）。"
+  },
+  "errInvalidDomain": {
+    "message": "无法识别的域名：$DOMAINS$",
+    "placeholders": {
+      "DOMAINS": {
+        "content": "$1"
+      }
+    }
+  },
+  "errTimeout": {
+    "message": "连接超时：$TARGET$ 在 $SECONDS$ 秒内没有响应。Vexto 可能卡住，或端口被其他程序占用。",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      },
+      "SECONDS": {
+        "content": "$2"
+      }
+    }
+  },
+  "errConnect": {
+    "message": "无法连接 $TARGET$：Vexto 未运行，或端口未监听（连接被拒绝）。请确认 Vexto 在托盘运行、插件接管已开启。",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      }
+    }
+  },
+  "errRequestFailed": {
+    "message": "请求失败：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "http401": {
+    "message": "密钥不一致（401）：请确认扩展与 Vexto「插件密钥」完全相同；两边都为空也算一致。"
+  },
+  "http403": {
+    "message": "请求被拒绝（403）：Vexto 不接受该请求来源或客户端标识。"
+  },
+  "http404": {
+    "message": "接口不存在（404）：端口上的服务可能不是 Vexto，或 Vexto 版本过旧。"
+  },
+  "http426": {
+    "message": "协议不兼容（426）：请升级 Vexto 或扩展。"
+  },
+  "httpGeneric": {
+    "message": "Vexto 返回 HTTP $STATUS$。",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsTitle": {
+    "message": "Vexto Connect 选项"
+  },
+  "navAriaLabel": {
+    "message": "设置分区"
+  },
+  "navConnection": {
+    "message": "连接"
+  },
+  "navAuto": {
+    "message": "自动接管"
+  },
+  "navTransfer": {
+    "message": "转发与过滤"
+  },
+  "navSites": {
+    "message": "站点规则"
+  },
+  "navDiagnostics": {
+    "message": "诊断"
+  },
+  "sidebarExtEnabled": {
+    "message": "扩展启用"
+  },
+  "extEnabledAria": {
+    "message": "启用扩展"
+  },
+  "viewConnectionStatus": {
+    "message": "查看连接状态"
+  },
+  "vextoTrayHint": {
+    "message": "Vexto 需在托盘运行"
+  },
+  "eyebrow": {
+    "message": "Vexto Connect · 设置"
+  },
+  "liveVersionLabel": {
+    "message": "Vexto 版本"
+  },
+  "labelEngine": {
+    "message": "引擎"
+  },
+  "labelProtocol": {
+    "message": "协议"
+  },
+  "labelEndpoint": {
+    "message": "端点"
+  },
+  "liveNotChecked": {
+    "message": "尚未检查"
+  },
+  "liveUsesSaved": {
+    "message": "实时状态使用已保存的设置"
+  },
+  "refreshBtn": {
+    "message": "刷新"
+  },
+  "cardApiTitle": {
+    "message": "接口"
+  },
+  "cardApiDesc": {
+    "message": "Vexto 托盘应用的本机 API。扩展只访问回环地址。"
+  },
+  "labelHost": {
+    "message": "主机"
+  },
+  "labelPort": {
+    "message": "API 端口"
+  },
+  "labelSecret": {
+    "message": "API 密钥"
+  },
+  "secretPlaceholder": {
+    "message": "可选；与 Vexto 设置保持一致"
+  },
+  "secretHint": {
+    "message": "与 Vexto「插件密钥」一致；Vexto 有密钥而扩展为空或不一致时会返回 401。"
+  },
+  "cardAutoDesc": {
+    "message": "浏览器里的 http/https 下载先尝试交给 Vexto；失败时恢复浏览器下载。"
+  },
+  "autoTakeoverLabel": {
+    "message": "自动接管浏览器下载"
+  },
+  "switchTakeover": {
+    "message": "接管"
+  },
+  "autoHint": {
+    "message": "修改后需保存生效；默认开启。与 Rayburst Connect 同时使用时，只开一个自动接管。"
+  },
+  "cardDownloadListTitle": {
+    "message": "下载列表"
+  },
+  "cardDownloadListDesc": {
+    "message": "控制 Edge 是否显示下载栏 / 气泡。这是全局开关。"
+  },
+  "hideDownloadUiLabel": {
+    "message": "隐藏浏览器下载列表"
+  },
+  "switchHide": {
+    "message": "隐藏"
+  },
+  "grantDownloadUi": {
+    "message": "授权下载 UI 权限"
+  },
+  "cardContextMenuTitle": {
+    "message": "右键入口"
+  },
+  "cardContextMenuDesc": {
+    "message": "不想自动接管时，可以逐个链接交给 Vexto。"
+  },
+  "contextMenuHint": {
+    "message": "在网页链接上点右键选择「用 Vexto 下载」；Vexto 不可用时会回落到浏览器下载并提示原因。"
+  },
+  "cardForwardTitle": {
+    "message": "转发"
+  },
+  "cardForwardDesc": {
+    "message": "交接时附带哪些请求信息。"
+  },
+  "forwardHeadersHint": {
+    "message": "关闭后 /add 不携带 referer 与 userAgent。"
+  },
+  "switchForward": {
+    "message": "转发"
+  },
+  "cardFilterTitle": {
+    "message": "过滤"
+  },
+  "cardFilterDesc": {
+    "message": "只作用于自动接管；右键「用 Vexto 下载」不受影响。"
+  },
+  "labelMinSize": {
+    "message": "最小大小"
+  },
+  "minSizePlaceholder": {
+    "message": "0 MB"
+  },
+  "minSizeHint": {
+    "message": "单位 MB，0 = 不过滤。"
+  },
+  "unknownSizeLabel": {
+    "message": "大小未知时仍然接管"
+  },
+  "labelDupWindow": {
+    "message": "重复窗口"
+  },
+  "dupWindowPlaceholder": {
+    "message": "10 秒"
+  },
+  "dupWindowHint": {
+    "message": "单位秒，0 = 关闭。同一 URL + 文件名在该时间内只交给 Vexto 一次。"
+  },
+  "cardSitesDesc": {
+    "message": "域名后缀匹配：example.com 同时匹配 sub.example.com。支持 # 注释。"
+  },
+  "allowSitesLabel": {
+    "message": "只接管这些域名（每行一个，留空 = 全部）"
+  },
+  "blockSitesLabel": {
+    "message": "不接管这些域名（每行一个）"
+  },
+  "sitesHint": {
+    "message": "只作用于自动接管。"
+  },
+  "cardDiagDesc": {
+    "message": "只记录交接结果与主机名，不记录 URL 查询串、Cookie 或密钥；最多 50 条，浏览器会话内有效。"
+  },
+  "clearBtn": {
+    "message": "清空"
+  },
+  "diagEmpty": {
+    "message": "暂无诊断事件。开启自动接管并下载一次后，这里会出现记录。"
+  },
+  "saveBtn": {
+    "message": "保存"
+  },
+  "testBtn": {
+    "message": "测试连接"
+  },
+  "testBtnBusy": {
+    "message": "测试中…"
+  },
+  "statusReadingSettings": {
+    "message": "正在读取设置…"
+  },
+  "cookieHintOff": {
+    "message": "默认关闭；开启后会把登录态交给本机 Vexto，首次开启需要授权全站 Cookie。"
+  },
+  "cookieHintGranted": {
+    "message": "已授权全站 Cookie（仅在开启时读取，并只发送给本机 Vexto）。"
+  },
+  "cookieHintUngranted": {
+    "message": "尚未授权全站 Cookie：保存时会请求权限；未授权时 Cookie 转发会保持关闭。"
+  },
+  "grantCookies": {
+    "message": "授权全站 Cookie"
+  },
+  "downloadUiHintOff": {
+    "message": "开启后仅在接管尝试期间隐藏下载列表/气泡；回落到浏览器下载时会恢复显示。首次开启需要授权「下载 UI」权限。"
+  },
+  "downloadUiHintGranted": {
+    "message": "已授权：接管尝试期间隐藏下载列表，结束后恢复。"
+  },
+  "downloadUiHintUngranted": {
+    "message": "尚未授权「下载 UI」权限：保存时会请求权限；未授权时不会隐藏下载列表。"
+  },
+  "diagReadFailed": {
+    "message": "读取诊断失败：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagCleared": {
+    "message": "诊断已清空。"
+  },
+  "diagClearFailed": {
+    "message": "清空诊断失败：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "paneConnectionDesc": {
+    "message": "配置 Vexto 本机接口，并查看实时连接状态。"
+  },
+  "paneAutoDesc": {
+    "message": "把浏览器下载交给 Vexto，失败时恢复浏览器下载。"
+  },
+  "paneTransferDesc": {
+    "message": "控制交接时附带的信息，以及自动接管的过滤规则。"
+  },
+  "paneSitesDesc": {
+    "message": "按域名决定哪些下载交给 Vexto。"
+  },
+  "paneDiagDesc": {
+    "message": "查看最近的交接结果，排查失败原因。"
+  },
+  "liveReasonReading": {
+    "message": "正在读取已保存的设置"
+  },
+  "notVextoPing": {
+    "message": "端口上的服务没有返回 Vexto 版本。"
+  },
+  "versionUnrecognized": {
+    "message": "Vexto 的 /version 响应无法识别。"
+  },
+  "liveConnectedReason": {
+    "message": "Vexto $VERSION$ · 引擎就绪 · $PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "liveEngineOffReason": {
+    "message": "Vexto 已连接，但下载引擎未启用；交接会回落到浏览器下载。"
+  },
+  "lastChecked": {
+    "message": "最近检查 $TIME$",
+    "placeholders": {
+      "TIME": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithEndpoint": {
+    "message": "已保存 · $ENDPOINT$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultsNotSaved": {
+    "message": "默认设置 · 尚未保存"
+  },
+  "settingsNotSaved": {
+    "message": "设置未保存：请修正标红的字段。"
+  },
+  "cookieDeniedNotice": {
+    "message": "未获得全站 Cookie 权限，Cookie 转发已关闭；"
+  },
+  "downloadUiDeniedNotice": {
+    "message": "未获得下载 UI 权限，隐藏下载列表已关闭；"
+  },
+  "otherSettingsSaved": {
+    "message": "其他设置已保存。"
+  },
+  "savedWithTime": {
+    "message": "已保存 · $ENDPOINT$ · $TIME$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      },
+      "TIME": {
+        "content": "$2"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "保存失败：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "cannotTest": {
+    "message": "无法测试：请先修正标红的字段。"
+  },
+  "connecting": {
+    "message": "正在连接 Vexto…"
+  },
+  "pingMissingVersion": {
+    "message": "端口上的服务不是 Vexto：/ping 响应缺少版本字段。"
+  },
+  "connectedBut": {
+    "message": "已连接 Vexto $VERSION$，但$DETAIL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "DETAIL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedReady": {
+    "message": "已连接 · Vexto $VERSION$ · 引擎就绪$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedEngineOff": {
+    "message": "已连接 · Vexto $VERSION$ · 引擎未启用（$ENGINE$）：交接会回落到浏览器下载$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "ENGINE": {
+        "content": "$2"
+      },
+      "PROTOCOL": {
+        "content": "$3"
+      }
+    }
+  },
+  "cookieGrantedStatus": {
+    "message": "已授权全站 Cookie。"
+  },
+  "cookieDeniedStatus": {
+    "message": "未获得全站 Cookie 权限。"
+  },
+  "downloadUiGrantedStatus": {
+    "message": "已授权下载 UI 权限。"
+  },
+  "downloadUiDeniedStatus": {
+    "message": "未获得下载 UI 权限。"
+  },
+  "loadSettingsFailed": {
+    "message": "读取设置失败：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagSourceAuto": {
+    "message": "自动"
+  },
+  "diagSourceManual": {
+    "message": "手动"
+  },
+  "diagOutcomeAccepted": {
+    "message": "已接管"
+  },
+  "diagOutcomeFallback": {
+    "message": "已回落"
+  },
+  "diagOutcomeSkipped": {
+    "message": "已跳过"
+  },
+  "diagOutcomeError": {
+    "message": "失败"
+  },
+  "diagOutcomeRecovered": {
+    "message": "已恢复"
+  },
+  "diagReasonSiteBlock": {
+    "message": "站点排除"
+  },
+  "diagReasonSiteAllow": {
+    "message": "不在允许列表"
+  },
+  "diagReasonSize": {
+    "message": "小于最小大小"
+  },
+  "diagReasonSizeUnknown": {
+    "message": "大小未知"
+  },
+  "diagReasonDuplicate": {
+    "message": "重复下载"
+  },
+  "diagReasonNetwork": {
+    "message": "网络失败"
+  },
+  "diagReasonRejected": {
+    "message": "Vexto 拒绝"
+  },
+  "diagBrowserCanceled": {
+    "message": "浏览器已取消"
+  },
+  "diagBrowserRemoved": {
+    "message": "浏览器文件已删除"
+  },
+  "diagBrowserCancelFailed": {
+    "message": "浏览器取消失败"
+  },
+  "diagBrowserRemoveFailed": {
+    "message": "浏览器删除失败"
+  },
+  "diagBrowserAlreadyGone": {
+    "message": "浏览器已无记录"
+  },
+  "diagBrowserSearchFailed": {
+    "message": "浏览器查询失败"
+  },
+  "diagCount": {
+    "message": "$COUNT$ 条",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1"
+      }
+    }
+  },
+  "openOptions": {
+    "message": "打开设置"
+  },
+  "labelChecked": {
+    "message": "检查"
+  },
+  "rowExtension": {
+    "message": "扩展"
+  },
+  "extEnabled": {
+    "message": "已启用"
+  },
+  "extDisabled": {
+    "message": "已停用"
+  },
+  "popupDisabledReason": {
+    "message": "在设置中启用后会开始接管下载。"
+  },
+  "connError": {
+    "message": "连接异常（$STATUS$）",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupEngineUnknownReason": {
+    "message": "已连接 Vexto，但无法读取引擎状态。"
+  },
+  "refreshStatus": {
+    "message": "刷新状态"
+  },
+  "checkFailed": {
+    "message": "检查失败"
+  },
+  "menuDownloadWithVexto": {
+    "message": "用 Vexto 下载"
+  },
+  "actionBusy": {
+    "message": "正在交给 Vexto…"
+  },
+  "actionHandedOff": {
+    "message": "已交给 Vexto"
+  },
+  "actionTakenOver": {
+    "message": "已接管下载"
+  },
+  "noLinkHeadline": {
+    "message": "没有读到链接"
+  },
+  "noLinkReason": {
+    "message": "请确认右键点在链接上。"
+  },
+  "unsupportedLinkHeadline": {
+    "message": "不支持的链接"
+  },
+  "unsupportedLinkReason": {
+    "message": "只能把 http/https 链接交给 Vexto。"
+  },
+  "extDisabledReason": {
+    "message": "请在 Vexto Connect 选项页启用扩展后再试。"
+  },
+  "noResponseHeadline": {
+    "message": "Vexto 未响应"
+  },
+  "httpStatusHeadline": {
+    "message": "Vexto 返回 HTTP $STATUS$",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "fellBackHeadline": {
+    "message": "已回落到浏览器下载"
+  },
+  "rejectedReasonLong": {
+    "message": "Vexto 拒绝接收：下载工具未启用，或该链接类型不受支持。"
+  },
+  "notTakenReason": {
+    "message": "Vexto 没有接管（响应：$RESPONSE$）。",
+    "placeholders": {
+      "RESPONSE": {
+        "content": "$1"
+      }
+    }
+  },
+  "unparseable": {
+    "message": "无法解析"
+  },
+  "usedBrowserDownload": {
+    "message": "已改用浏览器下载。"
+  },
+  "browserDownloadNotStarted": {
+    "message": "浏览器下载未启动"
+  },
+  "browserDownloadFailed": {
+    "message": "浏览器下载也未能启动：$DETAIL$。请复制链接后手动下载。",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "noResponseRestored": {
+    "message": "Vexto 未响应，已恢复浏览器下载"
+  },
+  "secretMismatchRestored": {
+    "message": "密钥不一致，已恢复浏览器下载"
+  },
+  "httpStatusRestored": {
+    "message": "Vexto 返回 HTTP $STATUS$，已恢复浏览器下载",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "handedOffNotCanceled": {
+    "message": "已交给 Vexto，但浏览器下载未取消"
+  },
+  "restoredBrowserDownload": {
+    "message": "已恢复浏览器下载"
+  },
+  "autoTakeoverError": {
+    "message": "自动接管出错，已恢复浏览器下载"
+  },
+  "rejectedReasonShort": {
+    "message": "Vexto 拒绝接收（下载工具未启用或链接类型不支持）。"
+  },
+  "fileLabel": {
+    "message": "文件：$FILE$",
+    "placeholders": {
+      "FILE": {
+        "content": "$1"
+      }
+    }
+  }
+}

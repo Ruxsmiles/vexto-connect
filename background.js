@@ -10,7 +10,7 @@
 if (typeof importScripts === "function") importScripts("common.js");
 
 const MENU_ID = "vexto-download-link";
-const MENU_TITLE = "用 Vexto 下载";
+const MENU_TITLE = t("menuDownloadWithVexto");
 const DEFAULT_ACTION_TITLE = "Vexto Connect";
 const BADGE_OK = "✓";
 const BADGE_ERR = "!";
@@ -204,20 +204,20 @@ function filenameFromUrl(rawUrl) {
 
 async function handoffLink(linkUrl, referer) {
   await ext.action.setBadgeText({ text: "" });
-  await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 正在交给 Vexto…` });
+  await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${t("actionBusy")}` });
 
   const settings = await loadSettings();
 
   if (!linkUrl) {
-    await reportFailure("没有读到链接", "请确认右键点在链接上。", null);
+    await reportFailure(t("noLinkHeadline"), t("noLinkReason"), null);
     return;
   }
   if (!/^https?:\/\//i.test(linkUrl)) {
-    await reportFailure("不支持的链接", "只能把 http/https 链接交给 Vexto。", null);
+    await reportFailure(t("unsupportedLinkHeadline"), t("unsupportedLinkReason"), null);
     return;
   }
   if (!settings.enabled) {
-    await reportFailure("扩展已停用", "请在 Vexto Connect 选项页启用扩展后再试。", linkUrl);
+    await reportFailure(t("statusDisabled"), t("extDisabledReason"), linkUrl);
     return;
   }
 
@@ -240,14 +240,14 @@ async function handoffLink(linkUrl, referer) {
   } catch (error) {
     addDiagnostic({ source: "manual", outcome: "error", host, reason: "network" });
     const reason = describeNetworkError(error, settings, ADD_TIMEOUT_MS);
-    await reportFailure("Vexto 未响应", reason, linkUrl);
+    await reportFailure(t("noResponseHeadline"), reason, linkUrl);
     return;
   }
   const { response, mode } = result;
 
   if (response.status === 401) {
     addDiagnostic({ source: "manual", outcome: "error", host, reason: "401", protocol: mode });
-    await reportFailure("密钥不一致", describeHttpError(401), linkUrl);
+    await reportFailure(t("statusSecretMismatch"), describeHttpError(401), linkUrl);
     return;
   }
   if (!response.ok) {
@@ -258,7 +258,11 @@ async function handoffLink(linkUrl, referer) {
       reason: `http-${response.status}`,
       protocol: mode,
     });
-    await reportFailure(`Vexto 返回 HTTP ${response.status}`, describeHttpError(response.status), linkUrl);
+    await reportFailure(
+      t("httpStatusHeadline", [String(response.status)]),
+      describeHttpError(response.status),
+      linkUrl
+    );
     return;
   }
 
@@ -278,15 +282,15 @@ async function handoffLink(linkUrl, referer) {
   });
   const reason =
     data && data.reason === "rejected"
-      ? "Vexto 拒绝接收：下载工具未启用，或该链接类型不受支持。"
-      : `Vexto 没有接管（响应：${data ? JSON.stringify(data) : "无法解析"}）。`;
-  await reportFailure("已回落到浏览器下载", reason, linkUrl);
+      ? t("rejectedReasonLong")
+      : t("notTakenReason", [data ? JSON.stringify(data) : t("unparseable")]);
+  await reportFailure(t("fellBackHeadline"), reason, linkUrl);
 }
 
 async function reportSuccess() {
   await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_OK });
   await ext.action.setBadgeText({ text: BADGE_OK });
-  await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 已交给 Vexto` });
+  await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${t("actionHandedOff")}` });
   clearBadgeSoon();
 }
 
@@ -297,7 +301,7 @@ async function reportFailure(headline, reason, fallbackUrl) {
     await ext.action.setBadgeText({ text: BADGE_ERR });
     await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
 
-    const fallbackNote = fallbackUrl ? "已改用浏览器下载。" : "";
+    const fallbackNote = fallbackUrl ? t("usedBrowserDownload") : "";
     notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, `${reason}${fallbackNote}`);
   } catch (error) {
     // 状态展示失败也不能影响回落下载
@@ -315,8 +319,8 @@ function startBrowserDownload(url) {
   chrome.downloads.download({ url, saveAs: false }, () => {
     if (chrome.runtime.lastError) {
       notify(
-        `${DEFAULT_ACTION_TITLE} · 浏览器下载未启动`,
-        `浏览器下载也未能启动：${chrome.runtime.lastError.message}。请复制链接后手动下载。`
+        `${DEFAULT_ACTION_TITLE} · ${t("browserDownloadNotStarted")}`,
+        t("browserDownloadFailed", [chrome.runtime.lastError.message])
       );
     }
   });
@@ -574,7 +578,7 @@ async function beginTakeover(item, settings) {
       await clearPending(item.id);
       settled = true;
       resumeDownload(item.id);
-      await reportTakeoverFailure("Vexto 未响应，已恢复浏览器下载", reason);
+      await reportTakeoverFailure(t("noResponseRestored"), reason);
       return;
     }
     const { response, mode } = result;
@@ -584,7 +588,7 @@ async function beginTakeover(item, settings) {
       await clearPending(item.id);
       settled = true;
       resumeDownload(item.id);
-      await reportTakeoverFailure("密钥不一致，已恢复浏览器下载", describeHttpError(401));
+      await reportTakeoverFailure(t("secretMismatchRestored"), describeHttpError(401));
       return;
     }
     if (!response.ok) {
@@ -599,7 +603,7 @@ async function beginTakeover(item, settings) {
       settled = true;
       resumeDownload(item.id);
       await reportTakeoverFailure(
-        `Vexto 返回 HTTP ${response.status}，已恢复浏览器下载`,
+        t("httpStatusRestored", [String(response.status)]),
         describeHttpError(response.status)
       );
       return;
@@ -621,7 +625,7 @@ async function beginTakeover(item, settings) {
         await reportTakeoverSuccess();
       } else {
         await reportTakeoverPartial(
-          "已交给 Vexto，但浏览器下载未取消",
+          t("handedOffNotCanceled"),
           removal.error || removal.action,
           removal.filename
         );
@@ -638,19 +642,19 @@ async function beginTakeover(item, settings) {
     });
     const reason =
       data && data.reason === "rejected"
-        ? "Vexto 拒绝接收（下载工具未启用或链接类型不支持）。"
-        : `Vexto 没有接管（响应：${data ? JSON.stringify(data) : "无法解析"}）。`;
+        ? t("rejectedReasonShort")
+        : t("notTakenReason", [data ? JSON.stringify(data) : t("unparseable")]);
     await clearPending(item.id);
     settled = true;
     resumeDownload(item.id);
-    await reportTakeoverFailure("已恢复浏览器下载", reason);
+    await reportTakeoverFailure(t("restoredBrowserDownload"), reason);
   } catch (error) {
     addDiagnostic({ source: "auto", outcome: "error", host, reason: "exception" });
     console.warn("自动接管出错，恢复浏览器下载：", error);
     await clearPending(item.id).catch(() => {});
     settled = true;
     resumeDownload(item.id);
-    await reportTakeoverFailure("自动接管出错，已恢复浏览器下载", String(error?.message || error));
+    await reportTakeoverFailure(t("autoTakeoverError"), String(error?.message || error));
   } finally {
     clearTimeout(guard);
   }
@@ -701,7 +705,7 @@ async function reportTakeoverSuccess() {
   try {
     await ext.action.setBadgeBackgroundColor({ color: BADGE_COLOR_OK });
     await ext.action.setBadgeText({ text: BADGE_OK });
-    await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · 已接管下载` });
+    await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${t("actionTakenOver")}` });
   } catch (error) {
     console.warn("显示接管成功状态失败：", error);
   }
@@ -717,8 +721,8 @@ async function reportTakeoverPartial(headline, reason, filename) {
   } catch (error) {
     console.warn("显示接管失败状态失败：", error);
   }
-  const fileNote = filename ? `文件：${filename}` : "";
-  notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, `${reason}${fileNote ? `。${fileNote}` : ""}`);
+  const fileNote = filename ? t("fileLabel", [filename]) : "";
+  notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, [reason, fileNote].filter(Boolean).join(" "));
   clearBadgeSoon();
 }
 

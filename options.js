@@ -49,6 +49,9 @@ const els = {
   actionbar: $("actionbar"),
 };
 
+// 先用 _locales 的文案填充静态界面，后续状态由脚本按需覆盖。
+localizeDocument();
+
 const ERROR_FIELDS = [
   "host",
   "port",
@@ -125,7 +128,7 @@ function setBusy(value) {
   busy = value;
   refreshSaveState();
   els.test.disabled = value;
-  els.test.textContent = value ? "测试中…" : "测试连接";
+  els.test.textContent = value ? t("testBtnBusy") : t("testBtn");
 }
 
 function clearFieldError(field) {
@@ -155,14 +158,11 @@ function showFieldErrors(errors) {
 
 function refreshCookieHint() {
   if (!els.forwardCookies.checked) {
-    els.cookieHint.textContent =
-      "默认关闭；开启后会把登录态交给本机 Vexto，首次开启需要授权全站 Cookie。";
+    els.cookieHint.textContent = t("cookieHintOff");
   } else if (cookieHostGranted) {
-    els.cookieHint.textContent =
-      "已授权全站 Cookie（仅在开启时读取，并只发送给本机 Vexto）。";
+    els.cookieHint.textContent = t("cookieHintGranted");
   } else {
-    els.cookieHint.textContent =
-      "尚未授权全站 Cookie：保存时会请求权限；未授权时 Cookie 转发会保持关闭。";
+    els.cookieHint.textContent = t("cookieHintUngranted");
   }
   els.grantCookies.hidden = !els.forwardCookies.checked || cookieHostGranted;
 }
@@ -179,13 +179,11 @@ async function loadCookiePermission() {
 
 function refreshDownloadUiHint() {
   if (!els.hideDownloadUi.checked) {
-    els.downloadUiHint.textContent =
-      "开启后仅在接管尝试期间隐藏下载列表/气泡；回落到浏览器下载时会恢复显示。首次开启需要授权「下载 UI」权限。";
+    els.downloadUiHint.textContent = t("downloadUiHintOff");
   } else if (downloadUiGranted) {
-    els.downloadUiHint.textContent = "已授权：接管尝试期间隐藏下载列表，结束后恢复。";
+    els.downloadUiHint.textContent = t("downloadUiHintGranted");
   } else {
-    els.downloadUiHint.textContent =
-      "尚未授权「下载 UI」权限：保存时会请求权限；未授权时不会隐藏下载列表。";
+    els.downloadUiHint.textContent = t("downloadUiHintUngranted");
   }
   els.grantDownloadUi.hidden = !els.hideDownloadUi.checked || downloadUiGranted;
 }
@@ -209,49 +207,56 @@ async function loadDownloadUiPermission() {
   refreshDownloadUiHint();
 }
 
-const DIAG_SOURCE_LABELS = { auto: "自动", manual: "手动" };
+// 诊断标签存 messages.json 的 key，渲染时再按界面语言翻译。
+const DIAG_SOURCE_LABELS = { auto: "diagSourceAuto", manual: "diagSourceManual" };
 const DIAG_OUTCOME_LABELS = {
-  accepted: "已接管",
-  fallback: "已回落",
-  skipped: "已跳过",
-  error: "失败",
-  recovered: "已恢复",
+  accepted: "diagOutcomeAccepted",
+  fallback: "diagOutcomeFallback",
+  skipped: "diagOutcomeSkipped",
+  error: "diagOutcomeError",
+  recovered: "diagOutcomeRecovered",
 };
 const DIAG_REASON_LABELS = {
-  "site-block": "站点排除",
-  "site-allow": "不在允许列表",
-  size: "小于最小大小",
-  "size-unknown": "大小未知",
-  duplicate: "重复下载",
-  network: "网络失败",
-  rejected: "Vexto 拒绝",
+  "site-block": "diagReasonSiteBlock",
+  "site-allow": "diagReasonSiteAllow",
+  size: "diagReasonSize",
+  "size-unknown": "diagReasonSizeUnknown",
+  duplicate: "diagReasonDuplicate",
+  network: "diagReasonNetwork",
+  rejected: "diagReasonRejected",
 };
 const DIAG_BROWSER_LABELS = {
-  canceled: "浏览器已取消",
-  removed: "浏览器文件已删除",
-  "cancel-failed": "浏览器取消失败",
-  "remove-failed": "浏览器删除失败",
-  "already-gone": "浏览器已无记录",
-  "search-failed": "浏览器查询失败",
+  canceled: "diagBrowserCanceled",
+  removed: "diagBrowserRemoved",
+  "cancel-failed": "diagBrowserCancelFailed",
+  "remove-failed": "diagBrowserRemoveFailed",
+  "already-gone": "diagBrowserAlreadyGone",
+  "search-failed": "diagBrowserSearchFailed",
 };
+
+// 未收录的值（例如 http-500）直接显示原样，保持可诊断。
+function diagLabel(map, value) {
+  if (!value) return "-";
+  return Object.hasOwn(map, value) ? t(map[value]) : String(value);
+}
 
 function renderDiagnostics(list) {
   if (!Array.isArray(list) || !list.length) {
-    els.diagnostics.textContent = "暂无诊断事件。开启自动接管并下载一次后，这里会出现记录。";
+    els.diagnostics.textContent = t("diagEmpty");
     return;
   }
   const lines = list.map((event) => {
-    const time = new Date(event.at).toLocaleTimeString("zh-CN", { hour12: false });
+    const time = formatTime(new Date(event.at));
     const parts = [
       time,
-      DIAG_SOURCE_LABELS[event.source] || event.source || "-",
-      DIAG_OUTCOME_LABELS[event.outcome] || event.outcome || "-",
+      diagLabel(DIAG_SOURCE_LABELS, event.source),
+      diagLabel(DIAG_OUTCOME_LABELS, event.outcome),
     ];
     if (event.host) parts.push(event.host);
-    if (event.reason) parts.push(DIAG_REASON_LABELS[event.reason] || event.reason);
-    if (event.browser) parts.push(DIAG_BROWSER_LABELS[event.browser] || event.browser);
-    if (event.protocol) parts.push(event.protocol === "v1" ? "协议 v1" : "协议 兼容");
-    if (typeof event.count === "number") parts.push(`${event.count} 条`);
+    if (event.reason) parts.push(diagLabel(DIAG_REASON_LABELS, event.reason));
+    if (event.browser) parts.push(diagLabel(DIAG_BROWSER_LABELS, event.browser));
+    if (event.protocol) parts.push(t(event.protocol === "v1" ? "protocolV1" : "protocolCompat"));
+    if (typeof event.count === "number") parts.push(t("diagCount", [String(event.count)]));
     return parts.join(" · ");
   });
   els.diagnostics.textContent = lines.join("\n");
@@ -262,7 +267,7 @@ async function loadDiagnostics() {
     const stored = await ext.storage.session.get("diagnostics");
     renderDiagnostics(stored.diagnostics);
   } catch (error) {
-    els.diagnostics.textContent = `读取诊断失败：${error?.message || error}`;
+    els.diagnostics.textContent = t("diagReadFailed", [error?.message || String(error)]);
   }
 }
 
@@ -270,20 +275,20 @@ async function clearDiagnostics() {
   try {
     await ext.storage.session.remove("diagnostics");
     renderDiagnostics([]);
-    setStatus("诊断已清空。", "");
+    setStatus(t("diagCleared"), "");
   } catch (error) {
-    setStatus(`清空诊断失败：${error?.message || error}`, "bad");
+    setStatus(t("diagClearFailed", [error?.message || String(error)]), "bad");
   }
 }
 
 // ── 分区导航 ────────────────────────────────────────────
 
 const PANES = {
-  connection: { title: "连接", desc: "配置 Vexto 本机接口，并查看实时连接状态。" },
-  auto: { title: "自动接管", desc: "把浏览器下载交给 Vexto，失败时恢复浏览器下载。" },
-  transfer: { title: "转发与过滤", desc: "控制交接时附带的信息，以及自动接管的过滤规则。" },
-  sites: { title: "站点规则", desc: "按域名决定哪些下载交给 Vexto。" },
-  diagnostics: { title: "诊断", desc: "查看最近的交接结果，排查失败原因。" },
+  connection: { title: "navConnection", desc: "paneConnectionDesc" },
+  auto: { title: "navAuto", desc: "paneAutoDesc" },
+  transfer: { title: "navTransfer", desc: "paneTransferDesc" },
+  sites: { title: "navSites", desc: "paneSitesDesc" },
+  diagnostics: { title: "navDiagnostics", desc: "paneDiagDesc" },
 };
 
 function paneFromHash() {
@@ -305,8 +310,8 @@ function showPane(name, { updateHash = true, focus = false } = {}) {
     pane.hidden = pane.id !== `pane-${name}`;
   }
 
-  els.paneTitle.textContent = PANES[name].title;
-  els.paneDesc.textContent = PANES[name].desc;
+  els.paneTitle.textContent = t(PANES[name].title);
+  els.paneDesc.textContent = t(PANES[name].desc);
   els.actionbar.hidden = name === "diagnostics";
   if (updateHash && location.hash !== `#${name}`) {
     history.replaceState(null, "", `#${name}`);
@@ -332,7 +337,7 @@ function setLiveState(state, detail = {}) {
   setDot(els.liveDot, dotClass);
   setDot(els.miniDot, dotClass);
 
-  const label = detail.label || "未知";
+  const label = detail.label || t("statusUnknown");
   els.liveLabel.textContent = label;
   els.miniLabel.textContent = label;
   els.liveReason.textContent = detail.reason || "";
@@ -340,7 +345,7 @@ function setLiveState(state, detail = {}) {
   if ("version" in detail) els.liveVersion.textContent = detail.version || "—";
   if ("engine" in detail) {
     els.liveEngine.textContent =
-      detail.engine === "running" ? "就绪" : detail.engine ? "未启用" : "—";
+      detail.engine === "running" ? t("engineReady") : detail.engine ? t("engineInactive") : "—";
   }
   if ("protocol" in detail) els.liveProtocol.textContent = detail.protocol || "—";
   if ("endpoint" in detail) {
@@ -361,17 +366,17 @@ async function checkLiveStatus() {
   const settings = await readSavedSettings();
   const endpoint = `${settings.host}:${settings.port}`;
   setLiveState("checking", {
-    label: "检查中…",
-    reason: "正在读取已保存的设置",
+    label: t("statusChecking"),
+    reason: t("liveReasonReading"),
     endpoint,
   });
-  els.liveChecked.textContent = "正在检查…";
+  els.liveChecked.textContent = t("statusChecking");
 
   try {
     const pingResponse = await vextoFetch(settings, "/ping", { timeoutMs: LIVE_TIMEOUT_MS });
     if (!pingResponse.ok) {
       setLiveState("disconnected", {
-        label: "服务异常",
+        label: t("statusServiceError"),
         reason: describeHttpError(pingResponse.status),
         version: null,
         engine: null,
@@ -383,8 +388,8 @@ async function checkLiveStatus() {
     const ping = await readJson(pingResponse);
     if (!ping || typeof ping.version !== "string") {
       setLiveState("disconnected", {
-        label: "不是 Vexto",
-        reason: "端口上的服务没有返回 Vexto 版本。",
+        label: t("statusNotVexto"),
+        reason: t("notVextoPing"),
         version: null,
         engine: null,
         protocol: null,
@@ -397,8 +402,8 @@ async function checkLiveStatus() {
     const version = await readJson(versionResponse);
     if (!versionResponse.ok || !version || typeof version.engine !== "string") {
       setLiveState("disconnected", {
-        label: "服务异常",
-        reason: "Vexto 的 /version 响应无法识别。",
+        label: t("statusServiceError"),
+        reason: t("versionUnrecognized"),
         version: ping.version,
         engine: null,
         protocol: null,
@@ -413,7 +418,7 @@ async function checkLiveStatus() {
     });
     if (capabilitiesResponse.status === 401) {
       setLiveState("disconnected", {
-        label: "密钥不一致",
+        label: t("statusSecretMismatch"),
         reason: describeHttpError(401),
         version: ping.version,
         engine: version.engine,
@@ -424,7 +429,7 @@ async function checkLiveStatus() {
     }
     if (!capabilitiesResponse.ok) {
       setLiveState("disconnected", {
-        label: "服务异常",
+        label: t("statusServiceError"),
         reason: describeHttpError(capabilitiesResponse.status),
         version: ping.version,
         engine: version.engine,
@@ -439,13 +444,16 @@ async function checkLiveStatus() {
     const protocol = v1
       ? "v1"
       : capabilities && Number.isInteger(capabilities.protocolVersion)
-        ? `兼容 v${capabilities.protocolVersion}`
-        : "兼容";
+        ? t("protocolCompatVersion", [String(capabilities.protocolVersion)])
+        : t("protocolCompatPlain");
 
     if (version.engine === "running") {
       setLiveState("connected", {
-        label: "已连接",
-        reason: `Vexto ${ping.version} · 引擎就绪 · ${v1 ? "协议 v1" : "兼容接口"}`,
+        label: t("statusConnected"),
+        reason: t("liveConnectedReason", [
+          ping.version,
+          v1 ? t("protocolV1") : t("protocolCompat"),
+        ]),
         version: ping.version,
         engine: version.engine,
         protocol,
@@ -453,8 +461,8 @@ async function checkLiveStatus() {
       });
     } else {
       setLiveState("warning", {
-        label: "引擎未启用",
-        reason: "Vexto 已连接，但下载引擎未启用；交接会回落到浏览器下载。",
+        label: t("statusEngineOff"),
+        reason: t("liveEngineOffReason"),
         version: ping.version,
         engine: version.engine,
         protocol,
@@ -463,7 +471,7 @@ async function checkLiveStatus() {
     }
   } catch (error) {
     setLiveState("disconnected", {
-      label: "未连接",
+      label: t("statusDisconnected"),
       reason: describeNetworkError(error, settings, LIVE_TIMEOUT_MS),
       version: null,
       engine: null,
@@ -472,7 +480,7 @@ async function checkLiveStatus() {
     });
   } finally {
     liveBusy = false;
-    els.liveChecked.textContent = `最近检查 ${new Date().toLocaleTimeString("zh-CN", { hour12: false })}`;
+    els.liveChecked.textContent = t("lastChecked", [formatTime()]);
   }
 }
 
@@ -489,10 +497,10 @@ async function loadSettings() {
   if (stored.settings) {
     const settings = normalizeSettings(stored.settings);
     render(settings);
-    setStatus(`已保存 · ${settings.host}:${settings.port}`, "");
+    setStatus(t("savedWithEndpoint", [`${settings.host}:${settings.port}`]), "");
   } else {
     render(DEFAULT_SETTINGS);
-    setStatus("默认设置 · 尚未保存", "");
+    setStatus(t("defaultsNotSaved"), "");
   }
   savedSnapshot = formSnapshot();
   dirty = false;
@@ -507,7 +515,7 @@ async function saveSettings() {
   const { ok, errors, settings } = validateSettings(readForm());
   showFieldErrors(errors);
   if (!ok) {
-    setStatus("设置未保存：请修正标红的字段。", "bad");
+    setStatus(t("settingsNotSaved"), "bad");
     return;
   }
 
@@ -533,7 +541,7 @@ async function saveSettings() {
       if (!cookieHostGranted) {
         settings.forwardCookies = false;
         els.forwardCookies.checked = false;
-        notice += "未获得全站 Cookie 权限，Cookie 转发已关闭；";
+        notice += t("cookieDeniedNotice");
       }
     }
     if (needDownloadUi) {
@@ -543,7 +551,7 @@ async function saveSettings() {
       if (!downloadUiGranted) {
         settings.hideDownloadUi = false;
         els.hideDownloadUi.checked = false;
-        notice += "未获得下载 UI 权限，隐藏下载列表已关闭；";
+        notice += t("downloadUiDeniedNotice");
       }
     }
   }
@@ -565,14 +573,14 @@ async function saveSettings() {
     dirty = false;
     refreshSaveState();
     void checkLiveStatus();
-    const time = new Date().toLocaleTimeString("zh-CN", { hour12: false });
-    const finalNotice = notice ? `${notice}其他设置已保存。` : "";
+    const time = formatTime();
+    const finalNotice = notice ? `${notice}${t("otherSettingsSaved")}` : "";
     setStatus(
-      finalNotice || `已保存 · ${settings.host}:${settings.port} · ${time}`,
+      finalNotice || t("savedWithTime", [`${settings.host}:${settings.port}`, time]),
       finalNotice ? "warn" : "ok"
     );
   } catch (error) {
-    setStatus(`保存失败：${error?.message || error}`, "bad");
+    setStatus(t("saveFailed", [error?.message || String(error)]), "bad");
   }
 }
 
@@ -581,12 +589,12 @@ async function testConnection() {
   const { ok, errors, settings } = validateSettings(readForm());
   showFieldErrors(errors);
   if (!ok) {
-    setStatus("无法测试：请先修正标红的字段。", "bad");
+    setStatus(t("cannotTest"), "bad");
     return;
   }
 
   setBusy(true);
-  setStatus("正在连接 Vexto…", "");
+  setStatus(t("connecting"), "");
 
   try {
     // 1) /ping：产品发现，Vexto 侧不校验鉴权。
@@ -599,7 +607,7 @@ async function testConnection() {
         return;
       }
       if (!body || typeof body.version !== "string") {
-        setStatus("端口上的服务不是 Vexto：/ping 响应缺少版本字段。", "bad");
+        setStatus(t("pingMissingVersion"), "bad");
         return;
       }
       ping = body;
@@ -618,7 +626,7 @@ async function testConnection() {
         return;
       }
       if (!body || typeof body.engine !== "string") {
-        setStatus("Vexto 的 /version 响应无法识别。", "bad");
+        setStatus(t("versionUnrecognized"), "bad");
         return;
       }
       version = body;
@@ -636,7 +644,7 @@ async function testConnection() {
       });
       const body = await readJson(response);
       if (response.status === 401) {
-        setStatus(`已连接 Vexto ${ping.version}，但${describeHttpError(401)}`, "bad");
+        setStatus(t("connectedBut", [ping.version, describeHttpError(401)]), "bad");
         return;
       }
       if (!response.ok) {
@@ -675,17 +683,14 @@ async function testConnection() {
     }
 
     const protocol = v1
-      ? " · 协议 v1（X-Vexto-Client）"
+      ? ` · ${t("protocolV1Long")}`
       : capabilities && Number.isInteger(capabilities.protocolVersion)
-        ? ` · 兼容协议 v${capabilities.protocolVersion}`
+        ? ` · ${t("protocolCompatLong", [String(capabilities.protocolVersion)])}`
         : "";
     if (version.engine === "running") {
-      setStatus(`已连接 · Vexto ${ping.version} · 引擎就绪${protocol}`, "ok");
+      setStatus(t("connectedReady", [ping.version, protocol]), "ok");
     } else {
-      setStatus(
-        `已连接 · Vexto ${ping.version} · 引擎未启用（${version.engine}）：交接会回落到浏览器下载${protocol}`,
-        "warn"
-      );
+      setStatus(t("connectedEngineOff", [ping.version, version.engine, protocol]), "warn");
     }
   } finally {
     setBusy(false);
@@ -710,7 +715,7 @@ els.grantCookies.addEventListener("click", async () => {
   }
   refreshCookieHint();
   setStatus(
-    cookieHostGranted ? "已授权全站 Cookie。" : "未获得全站 Cookie 权限。",
+    cookieHostGranted ? t("cookieGrantedStatus") : t("cookieDeniedStatus"),
     cookieHostGranted ? "ok" : "warn"
   );
 });
@@ -723,7 +728,7 @@ els.grantDownloadUi.addEventListener("click", async () => {
   }
   refreshDownloadUiHint();
   setStatus(
-    downloadUiGranted ? "已授权下载 UI 权限。" : "未获得下载 UI 权限。",
+    downloadUiGranted ? t("downloadUiGrantedStatus") : t("downloadUiDeniedStatus"),
     downloadUiGranted ? "ok" : "warn"
   );
 });
@@ -815,5 +820,5 @@ showPane(paneFromHash(), { updateHash: false });
 startLivePolling();
 
 loadSettings().catch((error) => {
-  setStatus(`读取设置失败：${error?.message || error}`, "bad");
+  setStatus(t("loadSettingsFailed", [error?.message || String(error)]), "bad");
 });

@@ -1,0 +1,727 @@
+{
+  "extName": {
+    "message": "Vexto Connect"
+  },
+  "extDescription": {
+    "message": "브라우저 다운로드를 로컬 Vexto로 넘깁니다"
+  },
+  "statusChecking": {
+    "message": "확인 중…"
+  },
+  "statusConnected": {
+    "message": "연결됨"
+  },
+  "statusDisconnected": {
+    "message": "연결 안 됨"
+  },
+  "statusServiceError": {
+    "message": "서비스 오류"
+  },
+  "statusNotVexto": {
+    "message": "Vexto가 아님"
+  },
+  "statusSecretMismatch": {
+    "message": "키 불일치"
+  },
+  "statusEngineOff": {
+    "message": "엔진 비활성화됨"
+  },
+  "statusDisabled": {
+    "message": "확장 프로그램 비활성화됨"
+  },
+  "statusUnknown": {
+    "message": "알 수 없음"
+  },
+  "engineReady": {
+    "message": "준비됨"
+  },
+  "engineInactive": {
+    "message": "비활성화"
+  },
+  "protocolV1": {
+    "message": "프로토콜 v1"
+  },
+  "protocolCompat": {
+    "message": "호환 API"
+  },
+  "protocolCompatVersion": {
+    "message": "호환 v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "protocolCompatPlain": {
+    "message": "호환"
+  },
+  "protocolV1Long": {
+    "message": "프로토콜 v1(X-Vexto-Client)"
+  },
+  "protocolCompatLong": {
+    "message": "호환 프로토콜 v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "errHostRequired": {
+    "message": "호스트 주소를 입력하세요."
+  },
+  "errHostLoopback": {
+    "message": "루프백 주소만 사용할 수 있습니다: 127.0.0.1 또는 localhost."
+  },
+  "errPortRequired": {
+    "message": "포트를 입력하세요."
+  },
+  "errPortRange": {
+    "message": "포트는 1024–65535 사이의 정수여야 합니다."
+  },
+  "errMinSize": {
+    "message": "최소 크기는 0 이상의 숫자(MB)여야 합니다."
+  },
+  "errDupWindow": {
+    "message": "중복 방지 시간은 0 이상의 정수(초)여야 합니다."
+  },
+  "errInvalidDomain": {
+    "message": "인식할 수 없는 도메인: $DOMAINS$",
+    "placeholders": {
+      "DOMAINS": {
+        "content": "$1"
+      }
+    }
+  },
+  "errTimeout": {
+    "message": "연결 시간 초과: $TARGET$에서 $SECONDS$초 안에 응답이 없습니다. Vexto가 멈췄거나 포트를 다른 프로그램이 사용 중일 수 있습니다.",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      },
+      "SECONDS": {
+        "content": "$2"
+      }
+    }
+  },
+  "errConnect": {
+    "message": "$TARGET$에 연결할 수 없습니다: Vexto가 실행 중이 아니거나 포트가 열려 있지 않습니다(연결 거부). Vexto가 트레이에서 실행 중이고 확장 프로그램 인계가 켜져 있는지 확인하세요.",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      }
+    }
+  },
+  "errRequestFailed": {
+    "message": "요청 실패: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "http401": {
+    "message": "키 불일치(401): 확장 프로그램과 Vexto의 '애드온 키'가 완전히 같은지 확인하세요. 양쪽 모두 비어 있어도 일치로 간주됩니다."
+  },
+  "http403": {
+    "message": "요청 거부됨(403): Vexto가 이 요청 출처 또는 클라이언트 식별자를 허용하지 않습니다."
+  },
+  "http404": {
+    "message": "엔드포인트 없음(404): 이 포트의 서비스가 Vexto가 아니거나 Vexto 버전이 너무 오래되었을 수 있습니다."
+  },
+  "http426": {
+    "message": "프로토콜 비호환(426): Vexto 또는 확장 프로그램을 업그레이드하세요."
+  },
+  "httpGeneric": {
+    "message": "Vexto가 HTTP $STATUS$를 반환했습니다.",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsTitle": {
+    "message": "Vexto Connect 옵션"
+  },
+  "navAriaLabel": {
+    "message": "설정 섹션"
+  },
+  "navConnection": {
+    "message": "연결"
+  },
+  "navAuto": {
+    "message": "자동 인계"
+  },
+  "navTransfer": {
+    "message": "전달 및 필터"
+  },
+  "navSites": {
+    "message": "사이트 규칙"
+  },
+  "navDiagnostics": {
+    "message": "진단"
+  },
+  "sidebarExtEnabled": {
+    "message": "확장 프로그램"
+  },
+  "extEnabledAria": {
+    "message": "확장 프로그램 사용"
+  },
+  "viewConnectionStatus": {
+    "message": "연결 상태 보기"
+  },
+  "vextoTrayHint": {
+    "message": "Vexto가 트레이에서 실행 중이어야 합니다"
+  },
+  "eyebrow": {
+    "message": "Vexto Connect · 설정"
+  },
+  "liveVersionLabel": {
+    "message": "Vexto 버전"
+  },
+  "labelEngine": {
+    "message": "엔진"
+  },
+  "labelProtocol": {
+    "message": "프로토콜"
+  },
+  "labelEndpoint": {
+    "message": "엔드포인트"
+  },
+  "liveNotChecked": {
+    "message": "아직 확인하지 않음"
+  },
+  "liveUsesSaved": {
+    "message": "실시간 상태는 저장된 설정을 사용합니다"
+  },
+  "refreshBtn": {
+    "message": "새로 고침"
+  },
+  "cardApiTitle": {
+    "message": "API"
+  },
+  "cardApiDesc": {
+    "message": "Vexto 트레이 앱의 로컬 API입니다. 확장 프로그램은 루프백 주소에만 접근합니다."
+  },
+  "labelHost": {
+    "message": "호스트"
+  },
+  "labelPort": {
+    "message": "API 포트"
+  },
+  "labelSecret": {
+    "message": "API 키"
+  },
+  "secretPlaceholder": {
+    "message": "선택 사항, Vexto 설정과 동일하게"
+  },
+  "secretHint": {
+    "message": "Vexto의 '애드온 키'와 일치해야 합니다. Vexto에 키가 있는데 확장 프로그램이 비어 있거나 다르면 401이 반환됩니다."
+  },
+  "cardAutoDesc": {
+    "message": "브라우저의 http/https 다운로드를 먼저 Vexto로 넘기고, 실패하면 브라우저 다운로드를 재개합니다."
+  },
+  "autoTakeoverLabel": {
+    "message": "브라우저 다운로드 자동 인계"
+  },
+  "switchTakeover": {
+    "message": "인계"
+  },
+  "autoHint": {
+    "message": "변경 사항은 저장 후 적용됩니다. 기본적으로 켜져 있습니다. Rayburst Connect와 함께 사용할 때는 한쪽에서만 자동 인계를 켜세요."
+  },
+  "cardDownloadListTitle": {
+    "message": "다운로드 목록"
+  },
+  "cardDownloadListDesc": {
+    "message": "Edge에서 다운로드 바/버블을 표시할지 제어합니다. 전역 설정입니다."
+  },
+  "hideDownloadUiLabel": {
+    "message": "브라우저 다운로드 목록 숨기기"
+  },
+  "switchHide": {
+    "message": "숨기기"
+  },
+  "grantDownloadUi": {
+    "message": "다운로드 UI 권한 허용"
+  },
+  "cardContextMenuTitle": {
+    "message": "우클릭 메뉴"
+  },
+  "cardContextMenuDesc": {
+    "message": "자동 인계를 원하지 않으면 링크별로 Vexto에 넘길 수 있습니다."
+  },
+  "contextMenuHint": {
+    "message": "웹 페이지 링크를 마우스 오른쪽 버튼으로 클릭하고 'Vexto로 다운로드'를 선택하세요. Vexto를 사용할 수 없으면 브라우저 다운로드로 폴백되고 이유가 표시됩니다."
+  },
+  "cardForwardTitle": {
+    "message": "전달"
+  },
+  "cardForwardDesc": {
+    "message": "인계 시 어떤 요청 정보를 함께 전달할지 설정합니다."
+  },
+  "forwardHeadersHint": {
+    "message": "끄면 /add에 referer와 userAgent가 포함되지 않습니다."
+  },
+  "switchForward": {
+    "message": "전달"
+  },
+  "cardFilterTitle": {
+    "message": "필터"
+  },
+  "cardFilterDesc": {
+    "message": "자동 인계에만 적용됩니다. 우클릭 'Vexto로 다운로드'에는 영향을 주지 않습니다."
+  },
+  "labelMinSize": {
+    "message": "최소 크기"
+  },
+  "minSizePlaceholder": {
+    "message": "0 MB"
+  },
+  "minSizeHint": {
+    "message": "단위 MB, 0 = 필터 없음."
+  },
+  "unknownSizeLabel": {
+    "message": "크기를 알 수 없어도 인계"
+  },
+  "labelDupWindow": {
+    "message": "중복 시간"
+  },
+  "dupWindowPlaceholder": {
+    "message": "10초"
+  },
+  "dupWindowHint": {
+    "message": "단위 초, 0 = 끔. 같은 URL + 파일 이름은 이 시간 동안 Vexto로 한 번만 전달됩니다."
+  },
+  "cardSitesDesc": {
+    "message": "도메인 접미사로 일치합니다(example.com은 sub.example.com도 일치). # 주석을 지원합니다."
+  },
+  "allowSitesLabel": {
+    "message": "이 도메인만 인계(한 줄에 하나, 비우면 전체)"
+  },
+  "blockSitesLabel": {
+    "message": "이 도메인은 인계하지 않음(한 줄에 하나)"
+  },
+  "sitesHint": {
+    "message": "자동 인계에만 적용됩니다."
+  },
+  "cardDiagDesc": {
+    "message": "인계 결과와 호스트 이름만 기록하며 URL 쿼리 문자열, 쿠키, 키는 기록하지 않습니다. 최대 50개, 브라우저 세션 동안만 유지됩니다."
+  },
+  "clearBtn": {
+    "message": "지우기"
+  },
+  "diagEmpty": {
+    "message": "아직 진단 이벤트가 없습니다. 자동 인계를 켜고 한 번 다운로드하면 여기에 기록이 표시됩니다."
+  },
+  "saveBtn": {
+    "message": "저장"
+  },
+  "testBtn": {
+    "message": "연결 테스트"
+  },
+  "testBtnBusy": {
+    "message": "테스트 중…"
+  },
+  "statusReadingSettings": {
+    "message": "설정 불러오는 중…"
+  },
+  "cookieHintOff": {
+    "message": "기본적으로 꺼져 있습니다. 켜면 로그인 상태가 로컬 Vexto로 전달되며, 처음 켤 때 모든 사이트의 쿠키 권한이 필요합니다."
+  },
+  "cookieHintGranted": {
+    "message": "모든 사이트 쿠키 권한이 허용되었습니다(켜져 있을 때만 읽고 로컬 Vexto로만 전송)."
+  },
+  "cookieHintUngranted": {
+    "message": "모든 사이트 쿠키 권한이 아직 없습니다. 저장할 때 요청하며, 허용하지 않으면 쿠키 전달은 꺼진 상태로 유지됩니다."
+  },
+  "grantCookies": {
+    "message": "모든 사이트 쿠키 권한 허용"
+  },
+  "downloadUiHintOff": {
+    "message": "켜면 인계를 시도하는 동안에만 다운로드 목록/버블을 숨기고, 브라우저 다운로드로 폴백하면 다시 표시합니다. 처음 켤 때 '다운로드 UI' 권한이 필요합니다."
+  },
+  "downloadUiHintGranted": {
+    "message": "허용됨: 인계를 시도하는 동안 다운로드 목록을 숨기고, 끝나면 복원합니다."
+  },
+  "downloadUiHintUngranted": {
+    "message": "'다운로드 UI' 권한이 아직 없습니다. 저장할 때 요청하며, 허용하지 않으면 다운로드 목록을 숨기지 않습니다."
+  },
+  "diagReadFailed": {
+    "message": "진단 기록을 읽지 못했습니다: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagCleared": {
+    "message": "진단 기록을 지웠습니다."
+  },
+  "diagClearFailed": {
+    "message": "진단 기록을 지우지 못했습니다: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "paneConnectionDesc": {
+    "message": "Vexto 로컬 API를 설정하고 실시간 연결 상태를 확인합니다."
+  },
+  "paneAutoDesc": {
+    "message": "브라우저 다운로드를 Vexto로 넘기고, 실패하면 브라우저 다운로드를 재개합니다."
+  },
+  "paneTransferDesc": {
+    "message": "인계 시 전달할 정보와 자동 인계 필터를 설정합니다."
+  },
+  "paneSitesDesc": {
+    "message": "도메인별로 어떤 다운로드를 Vexto로 넘길지 정합니다."
+  },
+  "paneDiagDesc": {
+    "message": "최근 인계 결과를 보고 실패 원인을 파악합니다."
+  },
+  "liveReasonReading": {
+    "message": "저장된 설정을 불러오는 중"
+  },
+  "notVextoPing": {
+    "message": "이 포트의 서비스가 Vexto 버전을 반환하지 않았습니다."
+  },
+  "versionUnrecognized": {
+    "message": "Vexto의 /version 응답을 인식할 수 없습니다."
+  },
+  "liveConnectedReason": {
+    "message": "Vexto $VERSION$ · 엔진 준비됨 · $PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "liveEngineOffReason": {
+    "message": "Vexto에 연결되었지만 다운로드 엔진이 비활성화되어 있습니다. 인계는 브라우저 다운로드로 폴백됩니다."
+  },
+  "lastChecked": {
+    "message": "마지막 확인 $TIME$",
+    "placeholders": {
+      "TIME": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithEndpoint": {
+    "message": "저장됨 · $ENDPOINT$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultsNotSaved": {
+    "message": "기본 설정 · 아직 저장 안 됨"
+  },
+  "settingsNotSaved": {
+    "message": "설정이 저장되지 않았습니다. 빨간색으로 표시된 항목을 수정하세요."
+  },
+  "cookieDeniedNotice": {
+    "message": "모든 사이트 쿠키 권한이 없어 쿠키 전달을 껐습니다."
+  },
+  "downloadUiDeniedNotice": {
+    "message": "다운로드 UI 권한이 없어 다운로드 목록 숨기기를 껐습니다."
+  },
+  "otherSettingsSaved": {
+    "message": "나머지 설정은 저장되었습니다."
+  },
+  "savedWithTime": {
+    "message": "저장됨 · $ENDPOINT$ · $TIME$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      },
+      "TIME": {
+        "content": "$2"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "저장 실패: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "cannotTest": {
+    "message": "테스트할 수 없습니다. 먼저 빨간색 항목을 수정하세요."
+  },
+  "connecting": {
+    "message": "Vexto에 연결 중…"
+  },
+  "pingMissingVersion": {
+    "message": "이 포트의 서비스는 Vexto가 아닙니다. /ping 응답에 버전 필드가 없습니다."
+  },
+  "connectedBut": {
+    "message": "Vexto $VERSION$에 연결되었지만 $DETAIL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "DETAIL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedReady": {
+    "message": "연결됨 · Vexto $VERSION$ · 엔진 준비됨$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedEngineOff": {
+    "message": "연결됨 · Vexto $VERSION$ · 엔진 비활성화($ENGINE$): 인계는 브라우저 다운로드로 폴백됩니다$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "ENGINE": {
+        "content": "$2"
+      },
+      "PROTOCOL": {
+        "content": "$3"
+      }
+    }
+  },
+  "cookieGrantedStatus": {
+    "message": "모든 사이트 쿠키 권한을 허용했습니다."
+  },
+  "cookieDeniedStatus": {
+    "message": "모든 사이트 쿠키 권한을 얻지 못했습니다."
+  },
+  "downloadUiGrantedStatus": {
+    "message": "다운로드 UI 권한을 허용했습니다."
+  },
+  "downloadUiDeniedStatus": {
+    "message": "다운로드 UI 권한을 얻지 못했습니다."
+  },
+  "loadSettingsFailed": {
+    "message": "설정을 읽지 못했습니다: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagSourceAuto": {
+    "message": "자동"
+  },
+  "diagSourceManual": {
+    "message": "수동"
+  },
+  "diagOutcomeAccepted": {
+    "message": "인계됨"
+  },
+  "diagOutcomeFallback": {
+    "message": "폴백됨"
+  },
+  "diagOutcomeSkipped": {
+    "message": "건너뜀"
+  },
+  "diagOutcomeError": {
+    "message": "실패"
+  },
+  "diagOutcomeRecovered": {
+    "message": "복구됨"
+  },
+  "diagReasonSiteBlock": {
+    "message": "사이트 제외"
+  },
+  "diagReasonSiteAllow": {
+    "message": "허용 목록에 없음"
+  },
+  "diagReasonSize": {
+    "message": "최소 크기 미만"
+  },
+  "diagReasonSizeUnknown": {
+    "message": "크기 알 수 없음"
+  },
+  "diagReasonDuplicate": {
+    "message": "중복 다운로드"
+  },
+  "diagReasonNetwork": {
+    "message": "네트워크 실패"
+  },
+  "diagReasonRejected": {
+    "message": "Vexto 거부"
+  },
+  "diagBrowserCanceled": {
+    "message": "브라우저 취소됨"
+  },
+  "diagBrowserRemoved": {
+    "message": "브라우저 파일 삭제됨"
+  },
+  "diagBrowserCancelFailed": {
+    "message": "브라우저 취소 실패"
+  },
+  "diagBrowserRemoveFailed": {
+    "message": "브라우저 삭제 실패"
+  },
+  "diagBrowserAlreadyGone": {
+    "message": "브라우저 기록 없음"
+  },
+  "diagBrowserSearchFailed": {
+    "message": "브라우저 조회 실패"
+  },
+  "diagCount": {
+    "message": "$COUNT$개",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1"
+      }
+    }
+  },
+  "openOptions": {
+    "message": "설정 열기"
+  },
+  "labelChecked": {
+    "message": "확인"
+  },
+  "rowExtension": {
+    "message": "확장 프로그램"
+  },
+  "extEnabled": {
+    "message": "사용 중"
+  },
+  "extDisabled": {
+    "message": "사용 안 함"
+  },
+  "popupDisabledReason": {
+    "message": "설정에서 확장 프로그램을 켜면 다운로드 인계가 시작됩니다."
+  },
+  "connError": {
+    "message": "연결 오류($STATUS$)",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupEngineUnknownReason": {
+    "message": "Vexto에 연결되었지만 엔진 상태를 읽을 수 없습니다."
+  },
+  "refreshStatus": {
+    "message": "상태 새로 고침"
+  },
+  "checkFailed": {
+    "message": "확인 실패"
+  },
+  "menuDownloadWithVexto": {
+    "message": "Vexto로 다운로드"
+  },
+  "actionBusy": {
+    "message": "Vexto로 인계 중…"
+  },
+  "actionHandedOff": {
+    "message": "Vexto로 인계했습니다"
+  },
+  "actionTakenOver": {
+    "message": "다운로드를 인계했습니다"
+  },
+  "noLinkHeadline": {
+    "message": "링크를 찾지 못함"
+  },
+  "noLinkReason": {
+    "message": "링크를 마우스 오른쪽 버튼으로 클릭했는지 확인하세요."
+  },
+  "unsupportedLinkHeadline": {
+    "message": "지원되지 않는 링크"
+  },
+  "unsupportedLinkReason": {
+    "message": "http/https 링크만 Vexto로 넘길 수 있습니다."
+  },
+  "extDisabledReason": {
+    "message": "Vexto Connect 옵션에서 확장 프로그램을 켠 후 다시 시도하세요."
+  },
+  "noResponseHeadline": {
+    "message": "Vexto 응답 없음"
+  },
+  "httpStatusHeadline": {
+    "message": "Vexto가 HTTP $STATUS$를 반환했습니다",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "fellBackHeadline": {
+    "message": "브라우저 다운로드로 폴백됨"
+  },
+  "rejectedReasonLong": {
+    "message": "Vexto가 요청을 거부했습니다. 다운로드 도구가 비활성화되어 있거나 이 링크 형식이 지원되지 않습니다."
+  },
+  "notTakenReason": {
+    "message": "Vexto가 인계하지 않았습니다(응답: $RESPONSE$).",
+    "placeholders": {
+      "RESPONSE": {
+        "content": "$1"
+      }
+    }
+  },
+  "unparseable": {
+    "message": "해석할 수 없음"
+  },
+  "usedBrowserDownload": {
+    "message": "대신 브라우저 다운로드를 사용합니다."
+  },
+  "browserDownloadNotStarted": {
+    "message": "브라우저 다운로드가 시작되지 않음"
+  },
+  "browserDownloadFailed": {
+    "message": "브라우저 다운로드도 시작하지 못했습니다: $DETAIL$. 링크를 복사해 직접 다운로드하세요.",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "noResponseRestored": {
+    "message": "Vexto가 응답하지 않아 브라우저 다운로드를 재개했습니다"
+  },
+  "secretMismatchRestored": {
+    "message": "키 불일치로 브라우저 다운로드를 재개했습니다"
+  },
+  "httpStatusRestored": {
+    "message": "Vexto가 HTTP $STATUS$를 반환하여 브라우저 다운로드를 재개했습니다",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "handedOffNotCanceled": {
+    "message": "Vexto로 인계했지만 브라우저 다운로드를 취소하지 못했습니다"
+  },
+  "restoredBrowserDownload": {
+    "message": "브라우저 다운로드를 재개했습니다"
+  },
+  "autoTakeoverError": {
+    "message": "자동 인계 중 오류가 발생해 브라우저 다운로드를 재개했습니다"
+  },
+  "rejectedReasonShort": {
+    "message": "Vexto가 요청을 거부했습니다(다운로드 도구 비활성화 또는 링크 형식 미지원)."
+  },
+  "fileLabel": {
+    "message": "파일: $FILE$",
+    "placeholders": {
+      "FILE": {
+        "content": "$1"
+      }
+    }
+  }
+}

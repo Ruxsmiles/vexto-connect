@@ -6,7 +6,9 @@ Vexto Connect 是 [Vexto](https://github.com/Ruxsmiles/vexto) 的配套浏览器
 
 **项目仓库**：<https://github.com/Ruxsmiles/vexto-connect>
 
-**当前版本**：0.8.2 · Manifest V3 · Edge / Chrome 109+ · Firefox 128+ · GPL-3.0
+**当前版本**：0.9.0 · Manifest V3 · Edge / Chrome 109+ · Firefox 128+ · GPL-3.0
+
+界面支持 English、简体中文、日本語、한국어、Español 五种语言，跟随浏览器界面语言自动切换。
 
 ![Vexto Connect 设置页](assets/options-page.png)
 
@@ -24,6 +26,7 @@ Vexto Connect 是 [Vexto](https://github.com/Ruxsmiles/vexto) 的配套浏览器
 | Cookie 转发 | 默认关闭，按需开启，用于需要登录态的下载 |
 | 隐藏下载列表 | Chrome / Edge 接管期间隐藏下载栏与气泡，回落时恢复 |
 | 诊断记录 | 保留最近 50 条交接结果，只记录主机与原因码 |
+| 多语言界面 | 英文 / 简体中文 / 日文 / 韩文 / 西班牙文，跟随浏览器界面语言 |
 
 ## 下载与安装
 
@@ -125,10 +128,9 @@ powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1
 | Safari | 不支持（扩展模型与下载 API 不同） |
 | 移动端浏览器 | 不支持（移动版 Chrome / Edge 不支持扩展） |
 
-界面与文档目前仅提供中文。
+界面支持 English、简体中文、日本語、한국어、Español，默认跟随浏览器界面语言（`_locales` 的 `default_locale` 为 `en`，其余语言缺 key 时自动回落到英文）；扩展名称与描述也随语言切换。本文档仍以中文维护。
 
 Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；Vexto 提供 `/v1` 接口后会自动切换。
-
 ## 隐私与权限
 
 - **只访问本机**：所有网络请求都发往 `http://127.0.0.1` 或 `http://localhost`，不访问公网。
@@ -184,6 +186,7 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 - 源码、Issue、Pull Request：<https://github.com/Ruxsmiles/vexto-connect>
 - Manifest V3，纯静态 HTML / CSS / JS，**无 npm、无构建步骤、无前端框架**。
 - 修改后在扩展管理页点击「重新加载」即可生效。
+- 界面文案走浏览器原生 `_locales`（见下方「多语言」），打包前会自动校验。
 - 打包脚本：
   - Chrome / Edge：`powershell -ExecutionPolicy Bypass -File scripts/package.ps1`
   - Firefox：`powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1`
@@ -192,8 +195,27 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 
 - 不引入 npm、打包器、TypeScript 或前端框架；
 - 不加载远程脚本或公网资源；
-- 界面文案使用中文，错误必须对用户可见；
+- 界面文案必须走 `_locales`，不得在 HTML / JS 里写死某一种语言；
+- 错误必须对用户可见；
 - PR 中说明改动内容与测试方式。
+
+### 多语言
+
+界面语言由浏览器界面语言决定，扩展内不提供切换器。实现方式：
+
+- `_locales/{en,zh_CN,ja,ko,es}/messages.json` 五份文案，`manifest.json` 与 `manifest.firefox.json` 用 `__MSG_extName__` / `__MSG_extDescription__` 占位；
+- 页面用 `data-i18n="key"`（文本）与 `data-i18n-attr="title:key,aria-label:key"`（属性）标记，`common.js` 的 `localizeDocument()` 统一填充；
+- 脚本里的动态文案统一走 `t("key", [参数…])`，占位符用 `$NAME$` 声明；
+- 新增或修改文案后运行检查脚本（无依赖，Node 18+）：
+
+```bash
+node scripts/check-i18n.mjs
+```
+
+它会校验五份文件的 key 是否对齐、是否有空值、占位符是否定义一致，以及 manifest / HTML / JS 引用的 key 是否都存在、有没有定义了却没人用的 key。两个打包脚本会先跑这项检查，未通过则中止打包。
+
+临时用别的语言调试：把 `manifest.json` 的 `default_locale` 改成 `zh_CN` / `ja` / `ko` / `es` 后重新加载扩展，或直接把浏览器界面语言切换成目标语言。
+
 
 ## 许可
 

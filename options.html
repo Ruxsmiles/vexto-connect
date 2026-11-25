@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vexto Connect 选项</title>
+  <title data-i18n="optionsTitle">Vexto Connect Options</title>
   <link rel="stylesheet" href="options.css" />
 </head>
 <body>
@@ -17,59 +17,61 @@
         </div>
       </div>
 
-      <nav class="nav" id="nav" role="tablist" aria-label="设置分区">
+      <nav class="nav" id="nav" role="tablist" data-i18n-attr="aria-label:navAriaLabel">
         <button class="nav-item is-active" type="button" role="tab" id="nav-connection"
                 data-pane="connection" aria-selected="true" aria-controls="pane-connection">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 13.5a4.5 4.5 0 0 0 6.36.36l2.12-2.12a4.5 4.5 0 0 0-6.36-6.36l-1.06 1.06"/><path d="M13.5 10.5a4.5 4.5 0 0 0-6.36-.36L5.02 12.26a4.5 4.5 0 0 0 6.36 6.36l1.06-1.06"/></svg>
-          <span>连接</span>
+          <span data-i18n="navConnection">Connection</span>
         </button>
         <button class="nav-item" type="button" role="tab" id="nav-auto"
                 data-pane="auto" aria-selected="false" aria-controls="pane-auto" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          <span>自动接管</span>
+          <span data-i18n="navAuto">Auto takeover</span>
         </button>
         <button class="nav-item" type="button" role="tab" id="nav-transfer"
                 data-pane="transfer" aria-selected="false" aria-controls="pane-transfer" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h6M14 6h6M4 12h10M18 12h2M4 18h3M11 18h9"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>
-          <span>转发与过滤</span>
+          <span data-i18n="navTransfer">Forwarding &amp; filters</span>
         </button>
         <button class="nav-item" type="button" role="tab" id="nav-sites"
                 data-pane="sites" aria-selected="false" aria-controls="pane-sites" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18Z"/></svg>
-          <span>站点规则</span>
+          <span data-i18n="navSites">Site rules</span>
         </button>
         <button class="nav-item" type="button" role="tab" id="nav-diagnostics"
                 data-pane="diagnostics" aria-selected="false" aria-controls="pane-diagnostics" tabindex="-1">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-7 4.5 14 2.5-7H21"/></svg>
-          <span>诊断</span>
+          <span data-i18n="navDiagnostics">Diagnostics</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
         <div class="side-toggle">
-          <span class="side-label">扩展启用</span>
+          <span class="side-label" data-i18n="sidebarExtEnabled">Extension on</span>
           <label class="switch">
-            <input id="enabled" type="checkbox" aria-label="启用扩展" />
+            <input id="enabled" type="checkbox" aria-label="Enable extension"
+                   data-i18n-attr="aria-label:extEnabledAria" />
             <span class="track"><span class="thumb"></span></span>
           </label>
         </div>
-        <button class="mini-status" id="mini-status" type="button" title="查看连接状态">
+        <button class="mini-status" id="mini-status" type="button"
+                data-i18n-attr="title:viewConnectionStatus">
           <span class="dot" id="mini-dot"></span>
           <span class="mini-copy">
-            <span class="mini-label" id="mini-label">检查中…</span>
+            <span class="mini-label" id="mini-label">Checking…</span>
             <span class="mini-endpoint" id="mini-endpoint">127.0.0.1:29110</span>
           </span>
         </button>
-        <p class="side-hint">Vexto 需在托盘运行</p>
+        <p class="side-hint" data-i18n="vextoTrayHint">Vexto must be running in the tray</p>
       </div>
     </aside>
 
     <main class="main">
       <header class="main-head">
         <div class="head-copy">
-          <p class="eyebrow">Vexto Connect · 设置</p>
-          <h1 id="pane-title">连接</h1>
-          <p class="sub" id="pane-desc">配置 Vexto 本机接口，并查看实时连接状态。</p>
+          <p class="eyebrow" data-i18n="eyebrow">Vexto Connect · Settings</p>
+          <h1 id="pane-title">Connection</h1>
+          <p class="sub" id="pane-desc">Configure the local Vexto API and see the live connection status.</p>
         </div>
       </header>
 
@@ -81,52 +83,52 @@
               <div class="live-status">
                 <span class="dot dot-lg" id="live-dot"></span>
                 <div class="live-copy">
-                  <p class="live-label" id="live-label">检查中…</p>
-                  <p class="live-reason" id="live-reason">正在读取已保存的设置</p>
+                  <p class="live-label" id="live-label">Checking…</p>
+                  <p class="live-reason" id="live-reason"></p>
                 </div>
               </div>
               <button class="btn ghost small" id="live-refresh" type="button">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg>
-                刷新
+                <span data-i18n="refreshBtn">Refresh</span>
               </button>
             </div>
             <dl class="live-meta">
-              <div><dt>Vexto 版本</dt><dd id="live-version">—</dd></div>
-              <div><dt>引擎</dt><dd id="live-engine">—</dd></div>
-              <div><dt>协议</dt><dd id="live-protocol">—</dd></div>
-              <div><dt>端点</dt><dd id="live-endpoint" class="mono">127.0.0.1:29110</dd></div>
+              <div><dt data-i18n="liveVersionLabel">Vexto version</dt><dd id="live-version">—</dd></div>
+              <div><dt data-i18n="labelEngine">Engine</dt><dd id="live-engine">—</dd></div>
+              <div><dt data-i18n="labelProtocol">Protocol</dt><dd id="live-protocol">—</dd></div>
+              <div><dt data-i18n="labelEndpoint">Endpoint</dt><dd id="live-endpoint" class="mono">127.0.0.1:29110</dd></div>
             </dl>
             <div class="live-foot">
-              <span id="live-checked">尚未检查</span>
-              <span class="muted">实时状态使用已保存的设置</span>
+              <span id="live-checked" data-i18n="liveNotChecked">Not checked yet</span>
+              <span class="muted" data-i18n="liveUsesSaved">Live status uses the saved settings</span>
             </div>
           </article>
 
           <article class="card">
             <div class="card-head">
-              <h2>接口</h2>
-              <p>Vexto 托盘应用的本机 API。扩展只访问回环地址。</p>
+              <h2 data-i18n="cardApiTitle">API</h2>
+              <p data-i18n="cardApiDesc">The local API of the Vexto tray app. The extension only accesses loopback addresses.</p>
             </div>
             <label class="row">
-              <span class="label">主机</span>
+              <span class="label" data-i18n="labelHost">Host</span>
               <input id="host" type="text" spellcheck="false" autocomplete="off"
                      placeholder="127.0.0.1" aria-describedby="host-error" />
             </label>
             <p class="field-error" id="host-error" hidden></p>
 
             <label class="row">
-              <span class="label">API 端口</span>
+              <span class="label" data-i18n="labelPort">API port</span>
               <input id="port" type="number" min="1024" max="65535" inputmode="numeric"
                      placeholder="29110" aria-describedby="port-error" />
             </label>
             <p class="field-error" id="port-error" hidden></p>
 
             <label class="row">
-              <span class="label">API 密钥</span>
+              <span class="label" data-i18n="labelSecret">API key</span>
               <input id="secret" type="password" autocomplete="off"
-                     placeholder="可选；与 Vexto 设置保持一致" />
+                     data-i18n-attr="placeholder:secretPlaceholder" />
             </label>
-            <p class="hint">与 Vexto「插件密钥」一致；Vexto 有密钥而扩展为空或不一致时会返回 401。</p>
+            <p class="hint" data-i18n="secretHint"></p>
           </article>
         </section>
 
@@ -134,43 +136,44 @@
         <section class="pane" id="pane-auto" role="tabpanel" aria-labelledby="nav-auto" hidden>
           <article class="card">
             <div class="card-head">
-              <h2>自动接管</h2>
-              <p>浏览器里的 http/https 下载先尝试交给 Vexto；失败时恢复浏览器下载。</p>
+              <h2 data-i18n="navAuto">Auto takeover</h2>
+              <p data-i18n="cardAutoDesc"></p>
             </div>
             <div class="switch-row">
-              <span class="label-wide">自动接管浏览器下载</span>
+              <span class="label-wide" data-i18n="autoTakeoverLabel">Take over browser downloads automatically</span>
               <label class="switch">
                 <input id="autoTakeover" type="checkbox" />
                 <span class="track"><span class="thumb"></span></span>
-                <span class="switch-label">接管</span>
+                <span class="switch-label" data-i18n="switchTakeover">Take over</span>
               </label>
             </div>
-            <p class="hint">修改后需保存生效；默认开启。与 Rayburst Connect 同时使用时，只开一个自动接管。</p>
+            <p class="hint" data-i18n="autoHint"></p>
           </article>
 
           <article class="card">
             <div class="card-head">
-              <h2>下载列表</h2>
-              <p>控制 Edge 是否显示下载栏 / 气泡。这是全局开关。</p>
+              <h2 data-i18n="cardDownloadListTitle">Download list</h2>
+              <p data-i18n="cardDownloadListDesc"></p>
             </div>
             <div class="switch-row" id="hideDownloadUiRow">
-              <span class="label-wide">隐藏浏览器下载列表</span>
+              <span class="label-wide" data-i18n="hideDownloadUiLabel">Hide the browser download list</span>
               <label class="switch">
                 <input id="hideDownloadUi" type="checkbox" />
                 <span class="track"><span class="thumb"></span></span>
-                <span class="switch-label">隐藏</span>
+                <span class="switch-label" data-i18n="switchHide">Hide</span>
               </label>
             </div>
-            <p class="hint" id="download-ui-hint">接管尝试期间隐藏 Edge 下载列表/气泡；回落到浏览器下载时恢复显示。首次开启需授权。</p>
-            <button id="grantDownloadUi" class="btn ghost small" type="button" hidden>授权下载 UI 权限</button>
+            <p class="hint" id="download-ui-hint"></p>
+            <button id="grantDownloadUi" class="btn ghost small" type="button" hidden
+                    data-i18n="grantDownloadUi">Grant download UI permission</button>
           </article>
 
           <article class="card">
             <div class="card-head">
-              <h2>右键入口</h2>
-              <p>不想自动接管时，可以逐个链接交给 Vexto。</p>
+              <h2 data-i18n="cardContextMenuTitle">Context menu</h2>
+              <p data-i18n="cardContextMenuDesc"></p>
             </div>
-            <p class="hint">在网页链接上点右键选择「用 Vexto 下载」；Vexto 不可用时会回落到浏览器下载并提示原因。</p>
+            <p class="hint" data-i18n="contextMenuHint"></p>
           </article>
         </section>
 
@@ -178,60 +181,63 @@
         <section class="pane" id="pane-transfer" role="tabpanel" aria-labelledby="nav-transfer" hidden>
           <article class="card">
             <div class="card-head">
-              <h2>转发</h2>
-              <p>交接时附带哪些请求信息。</p>
+              <h2 data-i18n="cardForwardTitle">Forwarding</h2>
+              <p data-i18n="cardForwardDesc"></p>
             </div>
             <div class="switch-row">
               <span class="label-wide">Referer / User-Agent</span>
               <label class="switch">
                 <input id="forwardHeaders" type="checkbox" />
                 <span class="track"><span class="thumb"></span></span>
-                <span class="switch-label">转发</span>
+                <span class="switch-label" data-i18n="switchForward">Forward</span>
               </label>
             </div>
-            <p class="hint">关闭后 /add 不携带 referer 与 userAgent。</p>
+            <p class="hint" data-i18n="forwardHeadersHint"></p>
 
             <div class="switch-row">
               <span class="label-wide">Cookie</span>
               <label class="switch">
                 <input id="forwardCookies" type="checkbox" />
                 <span class="track"><span class="thumb"></span></span>
-                <span class="switch-label">转发</span>
+                <span class="switch-label" data-i18n="switchForward">Forward</span>
               </label>
             </div>
-            <p class="hint" id="cookie-hint">默认关闭；开启后会把登录态交给本机 Vexto，首次开启需要授权全站 Cookie。</p>
-            <button id="grantCookies" class="btn ghost small" type="button" hidden>授权全站 Cookie</button>
+            <p class="hint" id="cookie-hint"></p>
+            <button id="grantCookies" class="btn ghost small" type="button" hidden
+                    data-i18n="grantCookies">Grant all-site cookie access</button>
           </article>
 
           <article class="card">
             <div class="card-head">
-              <h2>过滤</h2>
-              <p>只作用于自动接管；右键「用 Vexto 下载」不受影响。</p>
+              <h2 data-i18n="cardFilterTitle">Filters</h2>
+              <p data-i18n="cardFilterDesc"></p>
             </div>
             <label class="row">
-              <span class="label">最小大小</span>
+              <span class="label" data-i18n="labelMinSize">Minimum size</span>
               <input id="minimumSizeMb" type="number" min="0" step="0.1" inputmode="decimal"
-                     placeholder="0 MB" aria-describedby="minimumSizeMb-error" />
+                     aria-describedby="minimumSizeMb-error"
+                     data-i18n-attr="placeholder:minSizePlaceholder" />
             </label>
             <p class="field-error" id="minimumSizeMb-error" hidden></p>
-            <p class="hint">单位 MB，0 = 不过滤。</p>
+            <p class="hint" data-i18n="minSizeHint"></p>
 
             <div class="switch-row">
-              <span class="label-wide">大小未知时仍然接管</span>
+              <span class="label-wide" data-i18n="unknownSizeLabel">Take over even when the size is unknown</span>
               <label class="switch">
                 <input id="unknownSizeTakeover" type="checkbox" />
                 <span class="track"><span class="thumb"></span></span>
-                <span class="switch-label">接管</span>
+                <span class="switch-label" data-i18n="switchTakeover">Take over</span>
               </label>
             </div>
 
             <label class="row">
-              <span class="label">重复窗口</span>
+              <span class="label" data-i18n="labelDupWindow">Duplicate window</span>
               <input id="duplicateWindowSeconds" type="number" min="0" step="1" inputmode="numeric"
-                     placeholder="10 秒" aria-describedby="duplicateWindowSeconds-error" />
+                     aria-describedby="duplicateWindowSeconds-error"
+                     data-i18n-attr="placeholder:dupWindowPlaceholder" />
             </label>
             <p class="field-error" id="duplicateWindowSeconds-error" hidden></p>
-            <p class="hint">单位秒，0 = 关闭。同一 URL + 文件名在该时间内只交给 Vexto 一次。</p>
+            <p class="hint" data-i18n="dupWindowHint"></p>
           </article>
         </section>
 
@@ -239,23 +245,23 @@
         <section class="pane" id="pane-sites" role="tabpanel" aria-labelledby="nav-sites" hidden>
           <article class="card">
             <div class="card-head">
-              <h2>站点规则</h2>
-              <p>域名后缀匹配：example.com 同时匹配 sub.example.com。支持 # 注释。</p>
+              <h2 data-i18n="navSites">Site rules</h2>
+              <p data-i18n="cardSitesDesc"></p>
             </div>
             <label class="field">
-              <span class="label-wide">只接管这些域名（每行一个，留空 = 全部）</span>
+              <span class="label-wide" data-i18n="allowSitesLabel"></span>
               <textarea id="allowSites" rows="6" spellcheck="false" placeholder="example.com"
                         aria-describedby="allowSites-error"></textarea>
             </label>
             <p class="field-error wide" id="allowSites-error" hidden></p>
 
             <label class="field">
-              <span class="label-wide">不接管这些域名（每行一个）</span>
+              <span class="label-wide" data-i18n="blockSitesLabel"></span>
               <textarea id="blockSites" rows="6" spellcheck="false" placeholder="intranet.example.com"
                         aria-describedby="blockSites-error"></textarea>
             </label>
             <p class="field-error wide" id="blockSites-error" hidden></p>
-            <p class="hint">只作用于自动接管。</p>
+            <p class="hint" data-i18n="sitesHint"></p>
           </article>
         </section>
 
@@ -263,22 +269,23 @@
         <section class="pane pane-log" id="pane-diagnostics" role="tabpanel" aria-labelledby="nav-diagnostics" hidden>
           <article class="card">
             <div class="card-head">
-              <h2>诊断</h2>
-              <p>只记录交接结果与主机名，不记录 URL 查询串、Cookie 或密钥；最多 50 条，浏览器会话内有效。</p>
+              <h2 data-i18n="navDiagnostics">Diagnostics</h2>
+              <p data-i18n="cardDiagDesc"></p>
             </div>
             <div class="actions">
-              <button id="diag-refresh" class="btn ghost small" type="button">刷新</button>
-              <button id="diag-clear" class="btn ghost small" type="button">清空</button>
+              <button id="diag-refresh" class="btn ghost small" type="button" data-i18n="refreshBtn">Refresh</button>
+              <button id="diag-clear" class="btn ghost small" type="button" data-i18n="clearBtn">Clear</button>
             </div>
-            <pre id="diagnostics" class="detail" aria-live="polite">暂无诊断事件。开启自动接管并下载一次后，这里会出现记录。</pre>
+            <pre id="diagnostics" class="detail" aria-live="polite"></pre>
           </article>
         </section>
       </div>
 
       <footer class="actionbar" id="actionbar">
-        <button id="save" class="btn primary" type="button" disabled>保存</button>
-        <button id="test" class="btn" type="button">测试连接</button>
-        <span id="status" class="status" role="status" aria-live="polite">正在读取设置…</span>
+        <button id="save" class="btn primary" type="button" disabled data-i18n="saveBtn">Save</button>
+        <button id="test" class="btn" type="button" data-i18n="testBtn">Test connection</button>
+        <span id="status" class="status" role="status" aria-live="polite"
+              data-i18n="statusReadingSettings"></span>
       </footer>
     </main>
   </div>

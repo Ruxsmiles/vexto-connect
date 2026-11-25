@@ -1,0 +1,727 @@
+{
+  "extName": {
+    "message": "Vexto Connect"
+  },
+  "extDescription": {
+    "message": "ブラウザのダウンロードをローカルの Vexto に引き継ぎます"
+  },
+  "statusChecking": {
+    "message": "確認中…"
+  },
+  "statusConnected": {
+    "message": "接続済み"
+  },
+  "statusDisconnected": {
+    "message": "未接続"
+  },
+  "statusServiceError": {
+    "message": "サービス異常"
+  },
+  "statusNotVexto": {
+    "message": "Vexto ではありません"
+  },
+  "statusSecretMismatch": {
+    "message": "キーが一致しません"
+  },
+  "statusEngineOff": {
+    "message": "エンジン無効"
+  },
+  "statusDisabled": {
+    "message": "拡張機能は無効です"
+  },
+  "statusUnknown": {
+    "message": "不明"
+  },
+  "engineReady": {
+    "message": "準備完了"
+  },
+  "engineInactive": {
+    "message": "無効"
+  },
+  "protocolV1": {
+    "message": "プロトコル v1"
+  },
+  "protocolCompat": {
+    "message": "互換 API"
+  },
+  "protocolCompatVersion": {
+    "message": "互換 v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "protocolCompatPlain": {
+    "message": "互換"
+  },
+  "protocolV1Long": {
+    "message": "プロトコル v1（X-Vexto-Client）"
+  },
+  "protocolCompatLong": {
+    "message": "互換プロトコル v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "errHostRequired": {
+    "message": "ホストアドレスを入力してください。"
+  },
+  "errHostLoopback": {
+    "message": "ループバックアドレスのみ使用できます：127.0.0.1 または localhost。"
+  },
+  "errPortRequired": {
+    "message": "ポートを入力してください。"
+  },
+  "errPortRange": {
+    "message": "ポートは 1024〜65535 の整数で入力してください。"
+  },
+  "errMinSize": {
+    "message": "最小サイズは 0 以上の数値（MB）で入力してください。"
+  },
+  "errDupWindow": {
+    "message": "重複保護の時間枠は 0 以上の整数（秒）で入力してください。"
+  },
+  "errInvalidDomain": {
+    "message": "認識できないドメイン：$DOMAINS$",
+    "placeholders": {
+      "DOMAINS": {
+        "content": "$1"
+      }
+    }
+  },
+  "errTimeout": {
+    "message": "接続がタイムアウトしました：$TARGET$ が $SECONDS$ 秒以内に応答しません。Vexto が応答していないか、ポートが他のプログラムに使われています。",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      },
+      "SECONDS": {
+        "content": "$2"
+      }
+    }
+  },
+  "errConnect": {
+    "message": "$TARGET$ に接続できません：Vexto が実行されていないか、ポートが待ち受けていません（接続拒否）。Vexto がトレイで動作し、拡張機能の引き継ぎが有効か確認してください。",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      }
+    }
+  },
+  "errRequestFailed": {
+    "message": "リクエストに失敗しました：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "http401": {
+    "message": "キーが一致しません（401）：拡張機能と Vexto の「アドオンキー」が完全に同じか確認してください。両方とも空の場合も一致とみなされます。"
+  },
+  "http403": {
+    "message": "リクエストが拒否されました（403）：Vexto がこのリクエスト元またはクライアント識別子を受け付けません。"
+  },
+  "http404": {
+    "message": "エンドポイントがありません（404）：このポートのサービスが Vexto でないか、Vexto のバージョンが古い可能性があります。"
+  },
+  "http426": {
+    "message": "プロトコルが非互換です（426）：Vexto または拡張機能を更新してください。"
+  },
+  "httpGeneric": {
+    "message": "Vexto が HTTP $STATUS$ を返しました。",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsTitle": {
+    "message": "Vexto Connect のオプション"
+  },
+  "navAriaLabel": {
+    "message": "設定セクション"
+  },
+  "navConnection": {
+    "message": "接続"
+  },
+  "navAuto": {
+    "message": "自動引き継ぎ"
+  },
+  "navTransfer": {
+    "message": "転送とフィルター"
+  },
+  "navSites": {
+    "message": "サイトルール"
+  },
+  "navDiagnostics": {
+    "message": "診断"
+  },
+  "sidebarExtEnabled": {
+    "message": "拡張機能"
+  },
+  "extEnabledAria": {
+    "message": "拡張機能を有効にする"
+  },
+  "viewConnectionStatus": {
+    "message": "接続状態を表示"
+  },
+  "vextoTrayHint": {
+    "message": "Vexto はトレイで実行する必要があります"
+  },
+  "eyebrow": {
+    "message": "Vexto Connect · 設定"
+  },
+  "liveVersionLabel": {
+    "message": "Vexto バージョン"
+  },
+  "labelEngine": {
+    "message": "エンジン"
+  },
+  "labelProtocol": {
+    "message": "プロトコル"
+  },
+  "labelEndpoint": {
+    "message": "エンドポイント"
+  },
+  "liveNotChecked": {
+    "message": "未チェック"
+  },
+  "liveUsesSaved": {
+    "message": "リアルタイム状態は保存済みの設定を使用します"
+  },
+  "refreshBtn": {
+    "message": "更新"
+  },
+  "cardApiTitle": {
+    "message": "API"
+  },
+  "cardApiDesc": {
+    "message": "Vexto トレイアプリのローカル API。拡張機能はループバックアドレスのみにアクセスします。"
+  },
+  "labelHost": {
+    "message": "ホスト"
+  },
+  "labelPort": {
+    "message": "API ポート"
+  },
+  "labelSecret": {
+    "message": "API キー"
+  },
+  "secretPlaceholder": {
+    "message": "任意（Vexto の設定と一致させてください）"
+  },
+  "secretHint": {
+    "message": "Vexto の「アドオンキー」と一致させてください。Vexto にキーがあり、拡張機能側が空または異なる場合は 401 が返ります。"
+  },
+  "cardAutoDesc": {
+    "message": "ブラウザの http/https ダウンロードはまず Vexto に引き継ぎ、失敗したらブラウザのダウンロードを再開します。"
+  },
+  "autoTakeoverLabel": {
+    "message": "ブラウザのダウンロードを自動で引き継ぐ"
+  },
+  "switchTakeover": {
+    "message": "引き継ぐ"
+  },
+  "autoHint": {
+    "message": "変更は保存後に反映されます。既定でオンです。Rayburst Connect と併用する場合は、どちらか一方だけ自動引き継ぎを有効にしてください。"
+  },
+  "cardDownloadListTitle": {
+    "message": "ダウンロード一覧"
+  },
+  "cardDownloadListDesc": {
+    "message": "Edge のダウンロードバー／バブルを表示するかを制御します。これは全体設定です。"
+  },
+  "hideDownloadUiLabel": {
+    "message": "ブラウザのダウンロード一覧を隠す"
+  },
+  "switchHide": {
+    "message": "隠す"
+  },
+  "grantDownloadUi": {
+    "message": "ダウンロード UI の権限を許可"
+  },
+  "cardContextMenuTitle": {
+    "message": "右クリックメニュー"
+  },
+  "cardContextMenuDesc": {
+    "message": "自動引き継ぎを使わない場合は、リンク単位で Vexto に渡せます。"
+  },
+  "contextMenuHint": {
+    "message": "ページ上のリンクを右クリックして「Vexto でダウンロード」を選びます。Vexto が利用できない場合はブラウザのダウンロードに戻り、理由が表示されます。"
+  },
+  "cardForwardTitle": {
+    "message": "転送"
+  },
+  "cardForwardDesc": {
+    "message": "引き継ぎ時にどのリクエスト情報を付加するかを設定します。"
+  },
+  "forwardHeadersHint": {
+    "message": "オフにすると /add に referer と userAgent を付けません。"
+  },
+  "switchForward": {
+    "message": "転送"
+  },
+  "cardFilterTitle": {
+    "message": "フィルター"
+  },
+  "cardFilterDesc": {
+    "message": "自動引き継ぎにのみ適用されます。右クリックの「Vexto でダウンロード」には影響しません。"
+  },
+  "labelMinSize": {
+    "message": "最小サイズ"
+  },
+  "minSizePlaceholder": {
+    "message": "0 MB"
+  },
+  "minSizeHint": {
+    "message": "単位は MB、0 = フィルターなし。"
+  },
+  "unknownSizeLabel": {
+    "message": "サイズ不明でも引き継ぐ"
+  },
+  "labelDupWindow": {
+    "message": "重複ウィンドウ"
+  },
+  "dupWindowPlaceholder": {
+    "message": "10 秒"
+  },
+  "dupWindowHint": {
+    "message": "単位は秒、0 = 無効。同じ URL とファイル名はこの時間内に一度だけ Vexto に渡します。"
+  },
+  "cardSitesDesc": {
+    "message": "ドメインのサフィックスで照合します（example.com は sub.example.com にも一致）。# でコメントを書けます。"
+  },
+  "allowSitesLabel": {
+    "message": "これらのドメインのみ引き継ぐ（1 行に 1 つ、空 = すべて）"
+  },
+  "blockSitesLabel": {
+    "message": "これらのドメインは引き継がない（1 行に 1 つ）"
+  },
+  "sitesHint": {
+    "message": "自動引き継ぎにのみ適用されます。"
+  },
+  "cardDiagDesc": {
+    "message": "記録するのは引き継ぎ結果とホスト名のみで、URL のクエリ文字列・Cookie・キーは記録しません。最大 50 件、ブラウザのセッション中のみ有効です。"
+  },
+  "clearBtn": {
+    "message": "消去"
+  },
+  "diagEmpty": {
+    "message": "診断イベントはまだありません。自動引き継ぎを有効にして一度ダウンロードすると、ここに記録が表示されます。"
+  },
+  "saveBtn": {
+    "message": "保存"
+  },
+  "testBtn": {
+    "message": "接続をテスト"
+  },
+  "testBtnBusy": {
+    "message": "テスト中…"
+  },
+  "statusReadingSettings": {
+    "message": "設定を読み込み中…"
+  },
+  "cookieHintOff": {
+    "message": "既定ではオフです。有効にするとログイン状態がローカルの Vexto に渡されます。初回の有効化には全サイトの Cookie 権限が必要です。"
+  },
+  "cookieHintGranted": {
+    "message": "全サイトの Cookie 権限を許可済みです（有効時のみ読み取り、ローカルの Vexto にのみ送信します）。"
+  },
+  "cookieHintUngranted": {
+    "message": "全サイトの Cookie 権限が未許可です：保存時に要求します。許可しない場合、Cookie 転送はオフのままです。"
+  },
+  "grantCookies": {
+    "message": "全サイトの Cookie 権限を許可"
+  },
+  "downloadUiHintOff": {
+    "message": "オンにすると、引き継ぎを試みている間だけダウンロード一覧／バブルを隠し、ブラウザのダウンロードに戻ると再表示します。初回の有効化には「ダウンロード UI」権限が必要です。"
+  },
+  "downloadUiHintGranted": {
+    "message": "許可済み：引き継ぎを試みている間はダウンロード一覧を隠し、終了後に戻します。"
+  },
+  "downloadUiHintUngranted": {
+    "message": "「ダウンロード UI」権限が未許可です：保存時に要求します。許可しない場合、ダウンロード一覧は隠されません。"
+  },
+  "diagReadFailed": {
+    "message": "診断の読み込みに失敗しました：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagCleared": {
+    "message": "診断を消去しました。"
+  },
+  "diagClearFailed": {
+    "message": "診断の消去に失敗しました：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "paneConnectionDesc": {
+    "message": "Vexto のローカル API を設定し、リアルタイムの接続状態を確認します。"
+  },
+  "paneAutoDesc": {
+    "message": "ブラウザのダウンロードを Vexto に引き継ぎ、失敗したらブラウザのダウンロードを再開します。"
+  },
+  "paneTransferDesc": {
+    "message": "引き継ぎ時に付加する情報と、自動引き継ぎのフィルターを設定します。"
+  },
+  "paneSitesDesc": {
+    "message": "ドメインごとにどのダウンロードを Vexto に渡すか決めます。"
+  },
+  "paneDiagDesc": {
+    "message": "最近の引き継ぎ結果を確認し、失敗の原因を調べます。"
+  },
+  "liveReasonReading": {
+    "message": "保存済みの設定を読み込み中"
+  },
+  "notVextoPing": {
+    "message": "このポートのサービスは Vexto のバージョンを返しませんでした。"
+  },
+  "versionUnrecognized": {
+    "message": "Vexto の /version レスポンスを認識できません。"
+  },
+  "liveConnectedReason": {
+    "message": "Vexto $VERSION$ · エンジン準備完了 · $PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "liveEngineOffReason": {
+    "message": "Vexto には接続できましたが、ダウンロードエンジンが無効です。引き継ぎはブラウザのダウンロードに戻ります。"
+  },
+  "lastChecked": {
+    "message": "最終確認 $TIME$",
+    "placeholders": {
+      "TIME": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithEndpoint": {
+    "message": "保存済み · $ENDPOINT$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultsNotSaved": {
+    "message": "既定の設定 · 未保存"
+  },
+  "settingsNotSaved": {
+    "message": "設定は保存されませんでした：赤く表示された項目を修正してください。"
+  },
+  "cookieDeniedNotice": {
+    "message": "全サイトの Cookie 権限が得られなかったため、Cookie 転送をオフにしました。"
+  },
+  "downloadUiDeniedNotice": {
+    "message": "ダウンロード UI 権限が得られなかったため、ダウンロード一覧の非表示をオフにしました。"
+  },
+  "otherSettingsSaved": {
+    "message": "その他の設定は保存しました。"
+  },
+  "savedWithTime": {
+    "message": "保存済み · $ENDPOINT$ · $TIME$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      },
+      "TIME": {
+        "content": "$2"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "保存に失敗しました：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "cannotTest": {
+    "message": "テストできません：先に赤く表示された項目を修正してください。"
+  },
+  "connecting": {
+    "message": "Vexto に接続中…"
+  },
+  "pingMissingVersion": {
+    "message": "このポートのサービスは Vexto ではありません：/ping のレスポンスにバージョンフィールドがありません。"
+  },
+  "connectedBut": {
+    "message": "Vexto $VERSION$ に接続しましたが、$DETAIL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "DETAIL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedReady": {
+    "message": "接続済み · Vexto $VERSION$ · エンジン準備完了$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedEngineOff": {
+    "message": "接続済み · Vexto $VERSION$ · エンジン無効（$ENGINE$）：引き継ぎはブラウザのダウンロードに戻ります$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "ENGINE": {
+        "content": "$2"
+      },
+      "PROTOCOL": {
+        "content": "$3"
+      }
+    }
+  },
+  "cookieGrantedStatus": {
+    "message": "全サイトの Cookie 権限を許可しました。"
+  },
+  "cookieDeniedStatus": {
+    "message": "全サイトの Cookie 権限が得られませんでした。"
+  },
+  "downloadUiGrantedStatus": {
+    "message": "ダウンロード UI 権限を許可しました。"
+  },
+  "downloadUiDeniedStatus": {
+    "message": "ダウンロード UI 権限が得られませんでした。"
+  },
+  "loadSettingsFailed": {
+    "message": "設定の読み込みに失敗しました：$DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagSourceAuto": {
+    "message": "自動"
+  },
+  "diagSourceManual": {
+    "message": "手動"
+  },
+  "diagOutcomeAccepted": {
+    "message": "引き継ぎ済み"
+  },
+  "diagOutcomeFallback": {
+    "message": "フォールバック"
+  },
+  "diagOutcomeSkipped": {
+    "message": "スキップ"
+  },
+  "diagOutcomeError": {
+    "message": "失敗"
+  },
+  "diagOutcomeRecovered": {
+    "message": "復元済み"
+  },
+  "diagReasonSiteBlock": {
+    "message": "サイト除外"
+  },
+  "diagReasonSiteAllow": {
+    "message": "許可リスト外"
+  },
+  "diagReasonSize": {
+    "message": "最小サイズ未満"
+  },
+  "diagReasonSizeUnknown": {
+    "message": "サイズ不明"
+  },
+  "diagReasonDuplicate": {
+    "message": "重複ダウンロード"
+  },
+  "diagReasonNetwork": {
+    "message": "ネットワーク失敗"
+  },
+  "diagReasonRejected": {
+    "message": "Vexto が拒否"
+  },
+  "diagBrowserCanceled": {
+    "message": "ブラウザがキャンセル"
+  },
+  "diagBrowserRemoved": {
+    "message": "ブラウザのファイルを削除"
+  },
+  "diagBrowserCancelFailed": {
+    "message": "ブラウザのキャンセル失敗"
+  },
+  "diagBrowserRemoveFailed": {
+    "message": "ブラウザの削除失敗"
+  },
+  "diagBrowserAlreadyGone": {
+    "message": "ブラウザに記録なし"
+  },
+  "diagBrowserSearchFailed": {
+    "message": "ブラウザの照会失敗"
+  },
+  "diagCount": {
+    "message": "$COUNT$ 件",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1"
+      }
+    }
+  },
+  "openOptions": {
+    "message": "設定を開く"
+  },
+  "labelChecked": {
+    "message": "確認"
+  },
+  "rowExtension": {
+    "message": "拡張機能"
+  },
+  "extEnabled": {
+    "message": "有効"
+  },
+  "extDisabled": {
+    "message": "無効"
+  },
+  "popupDisabledReason": {
+    "message": "設定で有効にすると、ダウンロードの引き継ぎが始まります。"
+  },
+  "connError": {
+    "message": "接続エラー（$STATUS$）",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupEngineUnknownReason": {
+    "message": "Vexto に接続しましたが、エンジンの状態を読み取れません。"
+  },
+  "refreshStatus": {
+    "message": "状態を更新"
+  },
+  "checkFailed": {
+    "message": "確認に失敗"
+  },
+  "menuDownloadWithVexto": {
+    "message": "Vexto でダウンロード"
+  },
+  "actionBusy": {
+    "message": "Vexto に引き継ぎ中…"
+  },
+  "actionHandedOff": {
+    "message": "Vexto に引き継ぎました"
+  },
+  "actionTakenOver": {
+    "message": "ダウンロードを引き継ぎました"
+  },
+  "noLinkHeadline": {
+    "message": "リンクを取得できません"
+  },
+  "noLinkReason": {
+    "message": "リンク上で右クリックしたか確認してください。"
+  },
+  "unsupportedLinkHeadline": {
+    "message": "非対応のリンク"
+  },
+  "unsupportedLinkReason": {
+    "message": "Vexto に渡せるのは http/https のリンクだけです。"
+  },
+  "extDisabledReason": {
+    "message": "Vexto Connect のオプションで拡張機能を有効にしてから再試行してください。"
+  },
+  "noResponseHeadline": {
+    "message": "Vexto が応答しません"
+  },
+  "httpStatusHeadline": {
+    "message": "Vexto が HTTP $STATUS$ を返しました",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "fellBackHeadline": {
+    "message": "ブラウザのダウンロードに戻りました"
+  },
+  "rejectedReasonLong": {
+    "message": "Vexto が受け取りを拒否しました：ダウンロードツールが無効か、このリンク種別は未対応です。"
+  },
+  "notTakenReason": {
+    "message": "Vexto は引き継ぎませんでした（応答：$RESPONSE$）。",
+    "placeholders": {
+      "RESPONSE": {
+        "content": "$1"
+      }
+    }
+  },
+  "unparseable": {
+    "message": "解析不能"
+  },
+  "usedBrowserDownload": {
+    "message": "代わりにブラウザのダウンロードを使用します。"
+  },
+  "browserDownloadNotStarted": {
+    "message": "ブラウザのダウンロードを開始できません"
+  },
+  "browserDownloadFailed": {
+    "message": "ブラウザのダウンロードも開始できませんでした：$DETAIL$。リンクをコピーして手動でダウンロードしてください。",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "noResponseRestored": {
+    "message": "Vexto が応答しないため、ブラウザのダウンロードを再開しました"
+  },
+  "secretMismatchRestored": {
+    "message": "キーが一致しないため、ブラウザのダウンロードを再開しました"
+  },
+  "httpStatusRestored": {
+    "message": "Vexto が HTTP $STATUS$ を返したため、ブラウザのダウンロードを再開しました",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "handedOffNotCanceled": {
+    "message": "Vexto に引き継ぎましたが、ブラウザのダウンロードをキャンセルできませんでした"
+  },
+  "restoredBrowserDownload": {
+    "message": "ブラウザのダウンロードを再開しました"
+  },
+  "autoTakeoverError": {
+    "message": "自動引き継ぎでエラーが発生したため、ブラウザのダウンロードを再開しました"
+  },
+  "rejectedReasonShort": {
+    "message": "Vexto が受け取りを拒否しました（ダウンロードツールが無効か、リンク種別が未対応）。"
+  },
+  "fileLabel": {
+    "message": "ファイル：$FILE$",
+    "placeholders": {
+      "FILE": {
+        "content": "$1"
+      }
+    }
+  }
+}

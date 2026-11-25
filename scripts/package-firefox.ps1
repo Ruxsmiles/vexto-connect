@@ -8,6 +8,14 @@ $dist = Join-Path $root "dist"
 $zip = Join-Path $dist "vexto-connect-firefox-$version.zip"
 $staging = Join-Path $env:TEMP "vexto-connect-firefox-$version"
 
+# Validate the locales first so a broken messages.json never gets packaged.
+if (Get-Command node -ErrorAction SilentlyContinue) {
+  & node (Join-Path $PSScriptRoot "check-i18n.mjs")
+  if ($LASTEXITCODE -ne 0) { throw "i18n check failed; packaging aborted." }
+} else {
+  Write-Warning "node not found; skipping the i18n check."
+}
+
 $files = @(
   "background.js",
   "common.js",
@@ -31,6 +39,7 @@ foreach ($file in $files) {
 }
 Copy-Item (Join-Path $root "icons") (Join-Path $staging "icons") -Recurse
 Copy-Item (Join-Path $root "assets") (Join-Path $staging "assets") -Recurse
+Copy-Item (Join-Path $root "_locales") (Join-Path $staging "_locales") -Recurse
 
 # Firefox manifest is maintained separately: event page, gecko id, no downloads.ui.
 $ffPath = Join-Path -Path $root -ChildPath "manifest.firefox.json"

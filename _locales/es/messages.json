@@ -1,0 +1,727 @@
+{
+  "extName": {
+    "message": "Vexto Connect"
+  },
+  "extDescription": {
+    "message": "Envía las descargas del navegador a la app local Vexto"
+  },
+  "statusChecking": {
+    "message": "Comprobando…"
+  },
+  "statusConnected": {
+    "message": "Conectado"
+  },
+  "statusDisconnected": {
+    "message": "Sin conexión"
+  },
+  "statusServiceError": {
+    "message": "Error del servicio"
+  },
+  "statusNotVexto": {
+    "message": "No es Vexto"
+  },
+  "statusSecretMismatch": {
+    "message": "La clave no coincide"
+  },
+  "statusEngineOff": {
+    "message": "Motor desactivado"
+  },
+  "statusDisabled": {
+    "message": "Extensión desactivada"
+  },
+  "statusUnknown": {
+    "message": "Desconocido"
+  },
+  "engineReady": {
+    "message": "Listo"
+  },
+  "engineInactive": {
+    "message": "Desactivado"
+  },
+  "protocolV1": {
+    "message": "Protocolo v1"
+  },
+  "protocolCompat": {
+    "message": "API compatible"
+  },
+  "protocolCompatVersion": {
+    "message": "Compatible v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "protocolCompatPlain": {
+    "message": "Compatible"
+  },
+  "protocolV1Long": {
+    "message": "Protocolo v1 (X-Vexto-Client)"
+  },
+  "protocolCompatLong": {
+    "message": "Protocolo compatible v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "errHostRequired": {
+    "message": "Introduce una dirección de host."
+  },
+  "errHostLoopback": {
+    "message": "Solo se permiten direcciones de bucle local: 127.0.0.1 o localhost."
+  },
+  "errPortRequired": {
+    "message": "Introduce un puerto."
+  },
+  "errPortRange": {
+    "message": "El puerto debe ser un número entero entre 1024 y 65535."
+  },
+  "errMinSize": {
+    "message": "El tamaño mínimo debe ser un número igual o mayor que 0 (MB)."
+  },
+  "errDupWindow": {
+    "message": "La ventana de protección de duplicados debe ser un entero igual o mayor que 0 (segundos)."
+  },
+  "errInvalidDomain": {
+    "message": "Dominios no reconocidos: $DOMAINS$",
+    "placeholders": {
+      "DOMAINS": {
+        "content": "$1"
+      }
+    }
+  },
+  "errTimeout": {
+    "message": "Se agotó el tiempo de conexión: $TARGET$ no respondió en $SECONDS$ segundos. Puede que Vexto esté bloqueado o que otro programa use el puerto.",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      },
+      "SECONDS": {
+        "content": "$2"
+      }
+    }
+  },
+  "errConnect": {
+    "message": "No se puede conectar a $TARGET$: Vexto no está en ejecución o el puerto no está escuchando (conexión rechazada). Comprueba que Vexto se ejecute en la bandeja y que la transferencia desde la extensión esté activada.",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      }
+    }
+  },
+  "errRequestFailed": {
+    "message": "La solicitud falló: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "http401": {
+    "message": "La clave no coincide (401): asegúrate de que la extensión y Vexto usan exactamente la misma clave del complemento; que ambas estén vacías también cuenta como coincidencia."
+  },
+  "http403": {
+    "message": "Solicitud rechazada (403): Vexto no acepta este origen de solicitud ni este identificador de cliente."
+  },
+  "http404": {
+    "message": "Endpoint no encontrado (404): el servicio de este puerto puede no ser Vexto, o Vexto es demasiado antiguo."
+  },
+  "http426": {
+    "message": "Protocolo incompatible (426): actualiza Vexto o la extensión."
+  },
+  "httpGeneric": {
+    "message": "Vexto devolvió HTTP $STATUS$.",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsTitle": {
+    "message": "Opciones de Vexto Connect"
+  },
+  "navAriaLabel": {
+    "message": "Secciones de ajustes"
+  },
+  "navConnection": {
+    "message": "Conexión"
+  },
+  "navAuto": {
+    "message": "Transferencia automática"
+  },
+  "navTransfer": {
+    "message": "Reenvío y filtros"
+  },
+  "navSites": {
+    "message": "Reglas de sitios"
+  },
+  "navDiagnostics": {
+    "message": "Diagnóstico"
+  },
+  "sidebarExtEnabled": {
+    "message": "Extensión"
+  },
+  "extEnabledAria": {
+    "message": "Activar extensión"
+  },
+  "viewConnectionStatus": {
+    "message": "Ver estado de conexión"
+  },
+  "vextoTrayHint": {
+    "message": "Vexto debe estar en ejecución en la bandeja"
+  },
+  "eyebrow": {
+    "message": "Vexto Connect · Ajustes"
+  },
+  "liveVersionLabel": {
+    "message": "Versión de Vexto"
+  },
+  "labelEngine": {
+    "message": "Motor"
+  },
+  "labelProtocol": {
+    "message": "Protocolo"
+  },
+  "labelEndpoint": {
+    "message": "Endpoint"
+  },
+  "liveNotChecked": {
+    "message": "Sin comprobar"
+  },
+  "liveUsesSaved": {
+    "message": "El estado en vivo usa los ajustes guardados"
+  },
+  "refreshBtn": {
+    "message": "Actualizar"
+  },
+  "cardApiTitle": {
+    "message": "API"
+  },
+  "cardApiDesc": {
+    "message": "La API local de la app de bandeja Vexto. La extensión solo accede a direcciones de bucle local."
+  },
+  "labelHost": {
+    "message": "Host"
+  },
+  "labelPort": {
+    "message": "Puerto de API"
+  },
+  "labelSecret": {
+    "message": "Clave de API"
+  },
+  "secretPlaceholder": {
+    "message": "Opcional; igual que en los ajustes de Vexto"
+  },
+  "secretHint": {
+    "message": "Debe coincidir con la clave del complemento de Vexto; si Vexto tiene clave y la extensión está vacía o no coincide, se devuelve 401."
+  },
+  "cardAutoDesc": {
+    "message": "Las descargas http/https del navegador se ofrecen primero a Vexto; si falla, la descarga del navegador se reanuda."
+  },
+  "autoTakeoverLabel": {
+    "message": "Transferir automáticamente las descargas del navegador"
+  },
+  "switchTakeover": {
+    "message": "Transferir"
+  },
+  "autoHint": {
+    "message": "Guarda para aplicar los cambios; activado por defecto. Si lo usas junto a Rayburst Connect, activa la transferencia automática solo en uno de los dos."
+  },
+  "cardDownloadListTitle": {
+    "message": "Lista de descargas"
+  },
+  "cardDownloadListDesc": {
+    "message": "Controla si Edge muestra la barra o la burbuja de descargas. Es un ajuste global."
+  },
+  "hideDownloadUiLabel": {
+    "message": "Ocultar la lista de descargas del navegador"
+  },
+  "switchHide": {
+    "message": "Ocultar"
+  },
+  "grantDownloadUi": {
+    "message": "Conceder permiso de interfaz de descargas"
+  },
+  "cardContextMenuTitle": {
+    "message": "Menú contextual"
+  },
+  "cardContextMenuDesc": {
+    "message": "Si prefieres no transferir automáticamente, puedes enviar enlaces sueltos a Vexto."
+  },
+  "contextMenuHint": {
+    "message": "Haz clic derecho en un enlace y elige «Descargar con Vexto»; si Vexto no está disponible, se usa la descarga del navegador y se indica el motivo."
+  },
+  "cardForwardTitle": {
+    "message": "Reenvío"
+  },
+  "cardForwardDesc": {
+    "message": "Qué datos de la solicitud se envían al transferir."
+  },
+  "forwardHeadersHint": {
+    "message": "Si se desactiva, /add no incluye referer ni userAgent."
+  },
+  "switchForward": {
+    "message": "Reenviar"
+  },
+  "cardFilterTitle": {
+    "message": "Filtros"
+  },
+  "cardFilterDesc": {
+    "message": "Solo se aplica a la transferencia automática; «Descargar con Vexto» del menú contextual no se ve afectado."
+  },
+  "labelMinSize": {
+    "message": "Tamaño mínimo"
+  },
+  "minSizePlaceholder": {
+    "message": "0 MB"
+  },
+  "minSizeHint": {
+    "message": "En MB; 0 = sin filtro."
+  },
+  "unknownSizeLabel": {
+    "message": "Transferir aunque se desconozca el tamaño"
+  },
+  "labelDupWindow": {
+    "message": "Ventana de duplicados"
+  },
+  "dupWindowPlaceholder": {
+    "message": "10 s"
+  },
+  "dupWindowHint": {
+    "message": "En segundos; 0 = desactivado. La misma URL + nombre de archivo se envía a Vexto una sola vez dentro de esta ventana."
+  },
+  "cardSitesDesc": {
+    "message": "Coincide por sufijo de dominio: example.com también coincide con sub.example.com. Se admiten comentarios con #."
+  },
+  "allowSitesLabel": {
+    "message": "Transferir solo estos dominios (uno por línea; vacío = todos)"
+  },
+  "blockSitesLabel": {
+    "message": "No transferir estos dominios (uno por línea)"
+  },
+  "sitesHint": {
+    "message": "Solo se aplica a la transferencia automática."
+  },
+  "cardDiagDesc": {
+    "message": "Solo registra resultados de transferencia y nombres de host; nunca cadenas de consulta de URL, cookies ni claves. Hasta 50 entradas, válidas solo durante la sesión del navegador."
+  },
+  "clearBtn": {
+    "message": "Vaciar"
+  },
+  "diagEmpty": {
+    "message": "Aún no hay eventos de diagnóstico. Cuando actives la transferencia automática y descargues algo, aparecerán aquí."
+  },
+  "saveBtn": {
+    "message": "Guardar"
+  },
+  "testBtn": {
+    "message": "Probar conexión"
+  },
+  "testBtnBusy": {
+    "message": "Probando…"
+  },
+  "statusReadingSettings": {
+    "message": "Leyendo ajustes…"
+  },
+  "cookieHintOff": {
+    "message": "Desactivado por defecto. Al activarlo, tu sesión se envía a Vexto local; la primera activación requiere permiso para cookies de todos los sitios."
+  },
+  "cookieHintGranted": {
+    "message": "Acceso a cookies de todos los sitios concedido (se leen solo mientras está activado y se envían solo a Vexto local)."
+  },
+  "cookieHintUngranted": {
+    "message": "Aún no se ha concedido acceso a cookies de todos los sitios: al guardar se solicitará. Sin él, el reenvío de cookies permanece desactivado."
+  },
+  "grantCookies": {
+    "message": "Conceder acceso a cookies de todos los sitios"
+  },
+  "downloadUiHintOff": {
+    "message": "Cuando está activado, la lista o burbuja de descargas se oculta solo mientras se intenta la transferencia y reaparece si la descarga recae en el navegador. La primera activación requiere el permiso de interfaz de descargas."
+  },
+  "downloadUiHintGranted": {
+    "message": "Concedido: la lista de descargas se oculta durante los intentos de transferencia y se restaura después."
+  },
+  "downloadUiHintUngranted": {
+    "message": "Aún no se ha concedido el permiso de interfaz de descargas: al guardar se solicitará. Sin él, la lista de descargas no se oculta."
+  },
+  "diagReadFailed": {
+    "message": "No se pudo leer el diagnóstico: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagCleared": {
+    "message": "Diagnóstico vaciado."
+  },
+  "diagClearFailed": {
+    "message": "No se pudo vaciar el diagnóstico: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "paneConnectionDesc": {
+    "message": "Configura la API local de Vexto y consulta el estado de conexión en vivo."
+  },
+  "paneAutoDesc": {
+    "message": "Envía las descargas del navegador a Vexto y reanuda la descarga si falla."
+  },
+  "paneTransferDesc": {
+    "message": "Controla qué se envía al transferir y los filtros de la transferencia automática."
+  },
+  "paneSitesDesc": {
+    "message": "Decide por dominio qué descargas van a Vexto."
+  },
+  "paneDiagDesc": {
+    "message": "Revisa los resultados recientes y diagnostica los fallos."
+  },
+  "liveReasonReading": {
+    "message": "Leyendo los ajustes guardados"
+  },
+  "notVextoPing": {
+    "message": "El servicio de este puerto no devolvió una versión de Vexto."
+  },
+  "versionUnrecognized": {
+    "message": "No se reconoce la respuesta de /version de Vexto."
+  },
+  "liveConnectedReason": {
+    "message": "Vexto $VERSION$ · motor listo · $PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "liveEngineOffReason": {
+    "message": "Vexto está conectado, pero su motor de descargas está desactivado; las transferencias recaerán en el navegador."
+  },
+  "lastChecked": {
+    "message": "Última comprobación $TIME$",
+    "placeholders": {
+      "TIME": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithEndpoint": {
+    "message": "Guardado · $ENDPOINT$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultsNotSaved": {
+    "message": "Ajustes predeterminados · sin guardar"
+  },
+  "settingsNotSaved": {
+    "message": "Ajustes sin guardar: corrige los campos marcados."
+  },
+  "cookieDeniedNotice": {
+    "message": "No se concedió acceso a cookies de todos los sitios, así que el reenvío de cookies está desactivado. "
+  },
+  "downloadUiDeniedNotice": {
+    "message": "No se concedió el permiso de interfaz de descargas, así que ocultar la lista está desactivado. "
+  },
+  "otherSettingsSaved": {
+    "message": "El resto de los ajustes se ha guardado."
+  },
+  "savedWithTime": {
+    "message": "Guardado · $ENDPOINT$ · $TIME$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      },
+      "TIME": {
+        "content": "$2"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "No se pudo guardar: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "cannotTest": {
+    "message": "No se puede probar: corrige antes los campos marcados."
+  },
+  "connecting": {
+    "message": "Conectando con Vexto…"
+  },
+  "pingMissingVersion": {
+    "message": "El servicio de este puerto no es Vexto: la respuesta de /ping no incluye el campo de versión."
+  },
+  "connectedBut": {
+    "message": "Conectado a Vexto $VERSION$, pero $DETAIL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "DETAIL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedReady": {
+    "message": "Conectado · Vexto $VERSION$ · motor listo$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedEngineOff": {
+    "message": "Conectado · Vexto $VERSION$ · motor desactivado ($ENGINE$): las transferencias recaerán en el navegador$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "ENGINE": {
+        "content": "$2"
+      },
+      "PROTOCOL": {
+        "content": "$3"
+      }
+    }
+  },
+  "cookieGrantedStatus": {
+    "message": "Acceso a cookies de todos los sitios concedido."
+  },
+  "cookieDeniedStatus": {
+    "message": "No se concedió acceso a cookies de todos los sitios."
+  },
+  "downloadUiGrantedStatus": {
+    "message": "Permiso de interfaz de descargas concedido."
+  },
+  "downloadUiDeniedStatus": {
+    "message": "No se concedió el permiso de interfaz de descargas."
+  },
+  "loadSettingsFailed": {
+    "message": "No se pudieron leer los ajustes: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagSourceAuto": {
+    "message": "Auto"
+  },
+  "diagSourceManual": {
+    "message": "Manual"
+  },
+  "diagOutcomeAccepted": {
+    "message": "Transferida"
+  },
+  "diagOutcomeFallback": {
+    "message": "Recurrida"
+  },
+  "diagOutcomeSkipped": {
+    "message": "Omitida"
+  },
+  "diagOutcomeError": {
+    "message": "Error"
+  },
+  "diagOutcomeRecovered": {
+    "message": "Recuperada"
+  },
+  "diagReasonSiteBlock": {
+    "message": "Sitio excluido"
+  },
+  "diagReasonSiteAllow": {
+    "message": "Fuera de la lista de permitidos"
+  },
+  "diagReasonSize": {
+    "message": "Menor que el tamaño mínimo"
+  },
+  "diagReasonSizeUnknown": {
+    "message": "Tamaño desconocido"
+  },
+  "diagReasonDuplicate": {
+    "message": "Descarga duplicada"
+  },
+  "diagReasonNetwork": {
+    "message": "Fallo de red"
+  },
+  "diagReasonRejected": {
+    "message": "Rechazada por Vexto"
+  },
+  "diagBrowserCanceled": {
+    "message": "Cancelada en el navegador"
+  },
+  "diagBrowserRemoved": {
+    "message": "Archivo del navegador eliminado"
+  },
+  "diagBrowserCancelFailed": {
+    "message": "Error al cancelar en el navegador"
+  },
+  "diagBrowserRemoveFailed": {
+    "message": "Error al eliminar en el navegador"
+  },
+  "diagBrowserAlreadyGone": {
+    "message": "Sin registro en el navegador"
+  },
+  "diagBrowserSearchFailed": {
+    "message": "Error al consultar el navegador"
+  },
+  "diagCount": {
+    "message": "$COUNT$ registros",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1"
+      }
+    }
+  },
+  "openOptions": {
+    "message": "Abrir ajustes"
+  },
+  "labelChecked": {
+    "message": "Comprobado"
+  },
+  "rowExtension": {
+    "message": "Extensión"
+  },
+  "extEnabled": {
+    "message": "Activada"
+  },
+  "extDisabled": {
+    "message": "Desactivada"
+  },
+  "popupDisabledReason": {
+    "message": "Activa la extensión en los ajustes para empezar a transferir descargas."
+  },
+  "connError": {
+    "message": "Error de conexión ($STATUS$)",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupEngineUnknownReason": {
+    "message": "Conectado a Vexto, pero no se pudo leer el estado del motor."
+  },
+  "refreshStatus": {
+    "message": "Actualizar estado"
+  },
+  "checkFailed": {
+    "message": "Error de comprobación"
+  },
+  "menuDownloadWithVexto": {
+    "message": "Descargar con Vexto"
+  },
+  "actionBusy": {
+    "message": "Transfiriendo a Vexto…"
+  },
+  "actionHandedOff": {
+    "message": "Transferido a Vexto"
+  },
+  "actionTakenOver": {
+    "message": "Descarga transferida"
+  },
+  "noLinkHeadline": {
+    "message": "No se encontró el enlace"
+  },
+  "noLinkReason": {
+    "message": "Comprueba que has hecho clic derecho sobre un enlace."
+  },
+  "unsupportedLinkHeadline": {
+    "message": "Enlace no compatible"
+  },
+  "unsupportedLinkReason": {
+    "message": "Solo se pueden enviar a Vexto enlaces http/https."
+  },
+  "extDisabledReason": {
+    "message": "Activa la extensión en la página de opciones de Vexto Connect y vuelve a intentarlo."
+  },
+  "noResponseHeadline": {
+    "message": "Vexto no respondió"
+  },
+  "httpStatusHeadline": {
+    "message": "Vexto devolvió HTTP $STATUS$",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "fellBackHeadline": {
+    "message": "Se recurrió a la descarga del navegador"
+  },
+  "rejectedReasonLong": {
+    "message": "Vexto rechazó la solicitud: el motor de descargas está desactivado o este tipo de enlace no es compatible."
+  },
+  "notTakenReason": {
+    "message": "Vexto no realizó la transferencia (respuesta: $RESPONSE$).",
+    "placeholders": {
+      "RESPONSE": {
+        "content": "$1"
+      }
+    }
+  },
+  "unparseable": {
+    "message": "no se puede analizar"
+  },
+  "usedBrowserDownload": {
+    "message": "Se usa la descarga del navegador en su lugar."
+  },
+  "browserDownloadNotStarted": {
+    "message": "No se inició la descarga del navegador"
+  },
+  "browserDownloadFailed": {
+    "message": "Tampoco se pudo iniciar la descarga del navegador: $DETAIL$. Copia el enlace y descárgalo manualmente.",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "noResponseRestored": {
+    "message": "Vexto no respondió; se reanudó la descarga del navegador"
+  },
+  "secretMismatchRestored": {
+    "message": "La clave no coincide; se reanudó la descarga del navegador"
+  },
+  "httpStatusRestored": {
+    "message": "Vexto devolvió HTTP $STATUS$; se reanudó la descarga del navegador",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "handedOffNotCanceled": {
+    "message": "Transferido a Vexto, pero la descarga del navegador no se canceló"
+  },
+  "restoredBrowserDownload": {
+    "message": "Se reanudó la descarga del navegador"
+  },
+  "autoTakeoverError": {
+    "message": "Error en la transferencia automática; se reanudó la descarga del navegador"
+  },
+  "rejectedReasonShort": {
+    "message": "Vexto rechazó la solicitud (el motor de descargas está desactivado o el tipo de enlace no es compatible)."
+  },
+  "fileLabel": {
+    "message": "Archivo: $FILE$",
+    "placeholders": {
+      "FILE": {
+        "content": "$1"
+      }
+    }
+  }
+}

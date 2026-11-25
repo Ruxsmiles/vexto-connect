@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="color-scheme" content="light dark" />
-  <title>Vexto Connect</title>
+  <title data-i18n="extName">Vexto Connect</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
@@ -14,7 +14,8 @@
         <strong>Vexto Connect</strong>
         <span id="version">v—</span>
       </div>
-      <button id="open-options-icon" class="icon-btn" type="button" title="打开设置" aria-label="打开设置">
+      <button id="open-options-icon" class="icon-btn" type="button"
+              data-i18n-attr="title:openOptions,aria-label:openOptions">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.12.6.66 1 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"></path>
@@ -25,25 +26,25 @@
     <section class="status-card" aria-live="polite">
       <div class="status-line">
         <span class="dot checking" id="dot" aria-hidden="true"></span>
-        <strong id="state-label">检查中…</strong>
+        <strong id="state-label">Checking…</strong>
         <span class="state-version" id="state-version"></span>
       </div>
       <p class="reason" id="reason"></p>
       <dl class="meta">
-        <div><dt>引擎</dt><dd id="engine">—</dd></div>
-        <div><dt>协议</dt><dd id="protocol">—</dd></div>
-        <div><dt>端点</dt><dd id="endpoint">—</dd></div>
-        <div><dt>检查</dt><dd id="checked">—</dd></div>
+        <div><dt data-i18n="labelEngine">Engine</dt><dd id="engine">—</dd></div>
+        <div><dt data-i18n="labelProtocol">Protocol</dt><dd id="protocol">—</dd></div>
+        <div><dt data-i18n="labelEndpoint">Endpoint</dt><dd id="endpoint">—</dd></div>
+        <div><dt data-i18n="labelChecked">Checked</dt><dd id="checked">—</dd></div>
       </dl>
     </section>
 
     <section class="rows">
       <div class="row">
-        <span class="row-label">扩展</span>
+        <span class="row-label" data-i18n="rowExtension">Extension</span>
         <strong class="row-value" id="enabled-state">—</strong>
       </div>
       <label class="row">
-        <span class="row-label">自动接管</span>
+        <span class="row-label" data-i18n="navAuto">Auto takeover</span>
         <span class="switch">
           <input type="checkbox" id="auto-takeover" />
           <span class="track" aria-hidden="true"></span>
@@ -52,8 +53,8 @@
     </section>
 
     <footer class="actions">
-      <button id="refresh" class="btn" type="button">刷新状态</button>
-      <button id="open-options" class="btn primary" type="button">打开设置</button>
+      <button id="refresh" class="btn" type="button" data-i18n="refreshStatus">Refresh status</button>
+      <button id="open-options" class="btn primary" type="button" data-i18n="openOptions">Open settings</button>
     </footer>
   </main>
 

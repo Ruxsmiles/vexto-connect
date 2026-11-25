@@ -1,0 +1,727 @@
+{
+  "extName": {
+    "message": "Vexto Connect"
+  },
+  "extDescription": {
+    "message": "Hand browser downloads over to the local Vexto app"
+  },
+  "statusChecking": {
+    "message": "Checking…"
+  },
+  "statusConnected": {
+    "message": "Connected"
+  },
+  "statusDisconnected": {
+    "message": "Not connected"
+  },
+  "statusServiceError": {
+    "message": "Service error"
+  },
+  "statusNotVexto": {
+    "message": "Not Vexto"
+  },
+  "statusSecretMismatch": {
+    "message": "Secret key mismatch"
+  },
+  "statusEngineOff": {
+    "message": "Engine disabled"
+  },
+  "statusDisabled": {
+    "message": "Extension disabled"
+  },
+  "statusUnknown": {
+    "message": "Unknown"
+  },
+  "engineReady": {
+    "message": "Ready"
+  },
+  "engineInactive": {
+    "message": "Disabled"
+  },
+  "protocolV1": {
+    "message": "Protocol v1"
+  },
+  "protocolCompat": {
+    "message": "Compatibility API"
+  },
+  "protocolCompatVersion": {
+    "message": "Compatible v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "protocolCompatPlain": {
+    "message": "Compatible"
+  },
+  "protocolV1Long": {
+    "message": "Protocol v1 (X-Vexto-Client)"
+  },
+  "protocolCompatLong": {
+    "message": "Compatible protocol v$VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      }
+    }
+  },
+  "errHostRequired": {
+    "message": "Enter a host address."
+  },
+  "errHostLoopback": {
+    "message": "Only loopback addresses are allowed: 127.0.0.1 or localhost."
+  },
+  "errPortRequired": {
+    "message": "Enter a port."
+  },
+  "errPortRange": {
+    "message": "The port must be an integer between 1024 and 65535."
+  },
+  "errMinSize": {
+    "message": "The minimum size must be a number of 0 or greater (MB)."
+  },
+  "errDupWindow": {
+    "message": "The duplicate protection window must be an integer of 0 or greater (seconds)."
+  },
+  "errInvalidDomain": {
+    "message": "Unrecognized domains: $DOMAINS$",
+    "placeholders": {
+      "DOMAINS": {
+        "content": "$1"
+      }
+    }
+  },
+  "errTimeout": {
+    "message": "Connection timed out: $TARGET$ did not respond within $SECONDS$ seconds. Vexto may be stuck, or another program is using the port.",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      },
+      "SECONDS": {
+        "content": "$2"
+      }
+    }
+  },
+  "errConnect": {
+    "message": "Cannot connect to $TARGET$: Vexto is not running or the port is not listening (connection refused). Make sure Vexto runs in the tray and extension takeover is enabled.",
+    "placeholders": {
+      "TARGET": {
+        "content": "$1"
+      }
+    }
+  },
+  "errRequestFailed": {
+    "message": "Request failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "http401": {
+    "message": "Secret key mismatch (401): make sure the extension and Vexto use exactly the same add-on key; both being empty also counts as a match."
+  },
+  "http403": {
+    "message": "Request rejected (403): Vexto does not accept this request origin or client identifier."
+  },
+  "http404": {
+    "message": "Endpoint not found (404): the service on this port may not be Vexto, or Vexto is too old."
+  },
+  "http426": {
+    "message": "Incompatible protocol (426): upgrade Vexto or the extension."
+  },
+  "httpGeneric": {
+    "message": "Vexto returned HTTP $STATUS$.",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsTitle": {
+    "message": "Vexto Connect Options"
+  },
+  "navAriaLabel": {
+    "message": "Settings sections"
+  },
+  "navConnection": {
+    "message": "Connection"
+  },
+  "navAuto": {
+    "message": "Auto takeover"
+  },
+  "navTransfer": {
+    "message": "Forwarding & filters"
+  },
+  "navSites": {
+    "message": "Site rules"
+  },
+  "navDiagnostics": {
+    "message": "Diagnostics"
+  },
+  "sidebarExtEnabled": {
+    "message": "Extension on"
+  },
+  "extEnabledAria": {
+    "message": "Enable extension"
+  },
+  "viewConnectionStatus": {
+    "message": "View connection status"
+  },
+  "vextoTrayHint": {
+    "message": "Vexto must be running in the tray"
+  },
+  "eyebrow": {
+    "message": "Vexto Connect · Settings"
+  },
+  "liveVersionLabel": {
+    "message": "Vexto version"
+  },
+  "labelEngine": {
+    "message": "Engine"
+  },
+  "labelProtocol": {
+    "message": "Protocol"
+  },
+  "labelEndpoint": {
+    "message": "Endpoint"
+  },
+  "liveNotChecked": {
+    "message": "Not checked yet"
+  },
+  "liveUsesSaved": {
+    "message": "Live status uses the saved settings"
+  },
+  "refreshBtn": {
+    "message": "Refresh"
+  },
+  "cardApiTitle": {
+    "message": "API"
+  },
+  "cardApiDesc": {
+    "message": "The local API of the Vexto tray app. The extension only accesses loopback addresses."
+  },
+  "labelHost": {
+    "message": "Host"
+  },
+  "labelPort": {
+    "message": "API port"
+  },
+  "labelSecret": {
+    "message": "API key"
+  },
+  "secretPlaceholder": {
+    "message": "Optional; match the value in Vexto"
+  },
+  "secretHint": {
+    "message": "Must match the add-on key in Vexto; if Vexto has a key and the extension's is empty or different, Vexto returns 401."
+  },
+  "cardAutoDesc": {
+    "message": "http/https downloads in the browser are offered to Vexto first; if that fails, the browser download resumes."
+  },
+  "autoTakeoverLabel": {
+    "message": "Take over browser downloads automatically"
+  },
+  "switchTakeover": {
+    "message": "Take over"
+  },
+  "autoHint": {
+    "message": "Save to apply changes; on by default. When used alongside Rayburst Connect, enable auto takeover in only one of them."
+  },
+  "cardDownloadListTitle": {
+    "message": "Download list"
+  },
+  "cardDownloadListDesc": {
+    "message": "Controls whether Edge shows the download bar / bubble. This is a global switch."
+  },
+  "hideDownloadUiLabel": {
+    "message": "Hide the browser download list"
+  },
+  "switchHide": {
+    "message": "Hide"
+  },
+  "grantDownloadUi": {
+    "message": "Grant download UI permission"
+  },
+  "cardContextMenuTitle": {
+    "message": "Context menu"
+  },
+  "cardContextMenuDesc": {
+    "message": "If you prefer not to take over automatically, you can hand individual links to Vexto."
+  },
+  "contextMenuHint": {
+    "message": "Right-click a link on a page and choose \"Download with Vexto\"; if Vexto is unavailable, the browser download is used and the reason is shown."
+  },
+  "cardForwardTitle": {
+    "message": "Forwarding"
+  },
+  "cardForwardDesc": {
+    "message": "Which request details are passed along on hand-off."
+  },
+  "forwardHeadersHint": {
+    "message": "When off, /add does not carry referer or userAgent."
+  },
+  "switchForward": {
+    "message": "Forward"
+  },
+  "cardFilterTitle": {
+    "message": "Filters"
+  },
+  "cardFilterDesc": {
+    "message": "Applies only to automatic takeover; \"Download with Vexto\" from the context menu is not affected."
+  },
+  "labelMinSize": {
+    "message": "Minimum size"
+  },
+  "minSizePlaceholder": {
+    "message": "0 MB"
+  },
+  "minSizeHint": {
+    "message": "In MB; 0 = no filter."
+  },
+  "unknownSizeLabel": {
+    "message": "Take over even when the size is unknown"
+  },
+  "labelDupWindow": {
+    "message": "Duplicate window"
+  },
+  "dupWindowPlaceholder": {
+    "message": "10 s"
+  },
+  "dupWindowHint": {
+    "message": "In seconds; 0 = off. The same URL + filename is handed to Vexto only once within this window."
+  },
+  "cardSitesDesc": {
+    "message": "Matches domain suffixes: example.com also matches sub.example.com. Lines starting with # are comments."
+  },
+  "allowSitesLabel": {
+    "message": "Only take over these domains (one per line; empty = all)"
+  },
+  "blockSitesLabel": {
+    "message": "Never take over these domains (one per line)"
+  },
+  "sitesHint": {
+    "message": "Applies only to automatic takeover."
+  },
+  "cardDiagDesc": {
+    "message": "Records only hand-off outcomes and host names — never URL query strings, cookies or keys. Up to 50 entries, kept for the browser session only."
+  },
+  "clearBtn": {
+    "message": "Clear"
+  },
+  "diagEmpty": {
+    "message": "No diagnostic events yet. After you enable automatic takeover and download something, entries appear here."
+  },
+  "saveBtn": {
+    "message": "Save"
+  },
+  "testBtn": {
+    "message": "Test connection"
+  },
+  "testBtnBusy": {
+    "message": "Testing…"
+  },
+  "statusReadingSettings": {
+    "message": "Reading settings…"
+  },
+  "cookieHintOff": {
+    "message": "Off by default. When enabled, your login state is handed to the local Vexto; the first enable requires all-site cookie permission."
+  },
+  "cookieHintGranted": {
+    "message": "All-site cookie access granted (read only while enabled, sent only to the local Vexto)."
+  },
+  "cookieHintUngranted": {
+    "message": "All-site cookie access not granted yet: saving asks for it. Without it, cookie forwarding stays off."
+  },
+  "grantCookies": {
+    "message": "Grant all-site cookie access"
+  },
+  "downloadUiHintOff": {
+    "message": "When on, the download list/bubble is hidden only while a takeover is attempted and reappears if the download falls back to the browser. The first enable requires the download UI permission."
+  },
+  "downloadUiHintGranted": {
+    "message": "Granted: the download list is hidden during takeover attempts and restored afterwards."
+  },
+  "downloadUiHintUngranted": {
+    "message": "Download UI permission not granted yet: saving asks for it. Without it, the download list is not hidden."
+  },
+  "diagReadFailed": {
+    "message": "Failed to read diagnostics: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagCleared": {
+    "message": "Diagnostics cleared."
+  },
+  "diagClearFailed": {
+    "message": "Failed to clear diagnostics: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "paneConnectionDesc": {
+    "message": "Configure the local Vexto API and see the live connection status."
+  },
+  "paneAutoDesc": {
+    "message": "Hand browser downloads to Vexto and resume the browser download if that fails."
+  },
+  "paneTransferDesc": {
+    "message": "Control what is passed along on hand-off and the filters for automatic takeover."
+  },
+  "paneSitesDesc": {
+    "message": "Decide which downloads go to Vexto by domain."
+  },
+  "paneDiagDesc": {
+    "message": "Review recent hand-off results and diagnose failures."
+  },
+  "liveReasonReading": {
+    "message": "Reading the saved settings"
+  },
+  "notVextoPing": {
+    "message": "The service on this port did not return a Vexto version."
+  },
+  "versionUnrecognized": {
+    "message": "The /version response from Vexto is not recognized."
+  },
+  "liveConnectedReason": {
+    "message": "Vexto $VERSION$ · engine ready · $PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "liveEngineOffReason": {
+    "message": "Vexto is connected but its download engine is disabled; hand-offs fall back to the browser download."
+  },
+  "lastChecked": {
+    "message": "Last checked $TIME$",
+    "placeholders": {
+      "TIME": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithEndpoint": {
+    "message": "Saved · $ENDPOINT$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultsNotSaved": {
+    "message": "Default settings · not saved yet"
+  },
+  "settingsNotSaved": {
+    "message": "Settings not saved: fix the highlighted fields."
+  },
+  "cookieDeniedNotice": {
+    "message": "All-site cookie access was not granted, so cookie forwarding is off; "
+  },
+  "downloadUiDeniedNotice": {
+    "message": "Download UI permission was not granted, so hiding the download list is off; "
+  },
+  "otherSettingsSaved": {
+    "message": "Other settings were saved."
+  },
+  "savedWithTime": {
+    "message": "Saved · $ENDPOINT$ · $TIME$",
+    "placeholders": {
+      "ENDPOINT": {
+        "content": "$1"
+      },
+      "TIME": {
+        "content": "$2"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "Save failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "cannotTest": {
+    "message": "Cannot test: fix the highlighted fields first."
+  },
+  "connecting": {
+    "message": "Connecting to Vexto…"
+  },
+  "pingMissingVersion": {
+    "message": "The service on this port is not Vexto: the /ping response has no version field."
+  },
+  "connectedBut": {
+    "message": "Connected to Vexto $VERSION$, but $DETAIL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "DETAIL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedReady": {
+    "message": "Connected · Vexto $VERSION$ · engine ready$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "PROTOCOL": {
+        "content": "$2"
+      }
+    }
+  },
+  "connectedEngineOff": {
+    "message": "Connected · Vexto $VERSION$ · engine disabled ($ENGINE$): hand-offs fall back to the browser download$PROTOCOL$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1"
+      },
+      "ENGINE": {
+        "content": "$2"
+      },
+      "PROTOCOL": {
+        "content": "$3"
+      }
+    }
+  },
+  "cookieGrantedStatus": {
+    "message": "All-site cookie access granted."
+  },
+  "cookieDeniedStatus": {
+    "message": "All-site cookie access was not granted."
+  },
+  "downloadUiGrantedStatus": {
+    "message": "Download UI permission granted."
+  },
+  "downloadUiDeniedStatus": {
+    "message": "Download UI permission was not granted."
+  },
+  "loadSettingsFailed": {
+    "message": "Failed to read settings: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "diagSourceAuto": {
+    "message": "Auto"
+  },
+  "diagSourceManual": {
+    "message": "Manual"
+  },
+  "diagOutcomeAccepted": {
+    "message": "Taken over"
+  },
+  "diagOutcomeFallback": {
+    "message": "Fell back"
+  },
+  "diagOutcomeSkipped": {
+    "message": "Skipped"
+  },
+  "diagOutcomeError": {
+    "message": "Failed"
+  },
+  "diagOutcomeRecovered": {
+    "message": "Recovered"
+  },
+  "diagReasonSiteBlock": {
+    "message": "Site excluded"
+  },
+  "diagReasonSiteAllow": {
+    "message": "Not in allow list"
+  },
+  "diagReasonSize": {
+    "message": "Below minimum size"
+  },
+  "diagReasonSizeUnknown": {
+    "message": "Unknown size"
+  },
+  "diagReasonDuplicate": {
+    "message": "Duplicate download"
+  },
+  "diagReasonNetwork": {
+    "message": "Network failure"
+  },
+  "diagReasonRejected": {
+    "message": "Rejected by Vexto"
+  },
+  "diagBrowserCanceled": {
+    "message": "Browser canceled"
+  },
+  "diagBrowserRemoved": {
+    "message": "Browser file removed"
+  },
+  "diagBrowserCancelFailed": {
+    "message": "Browser cancel failed"
+  },
+  "diagBrowserRemoveFailed": {
+    "message": "Browser removal failed"
+  },
+  "diagBrowserAlreadyGone": {
+    "message": "No browser record"
+  },
+  "diagBrowserSearchFailed": {
+    "message": "Browser query failed"
+  },
+  "diagCount": {
+    "message": "$COUNT$ entries",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1"
+      }
+    }
+  },
+  "openOptions": {
+    "message": "Open settings"
+  },
+  "labelChecked": {
+    "message": "Checked"
+  },
+  "rowExtension": {
+    "message": "Extension"
+  },
+  "extEnabled": {
+    "message": "Enabled"
+  },
+  "extDisabled": {
+    "message": "Disabled"
+  },
+  "popupDisabledReason": {
+    "message": "Enable the extension in settings to start taking over downloads."
+  },
+  "connError": {
+    "message": "Connection error ($STATUS$)",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupEngineUnknownReason": {
+    "message": "Connected to Vexto, but the engine status could not be read."
+  },
+  "refreshStatus": {
+    "message": "Refresh status"
+  },
+  "checkFailed": {
+    "message": "Check failed"
+  },
+  "menuDownloadWithVexto": {
+    "message": "Download with Vexto"
+  },
+  "actionBusy": {
+    "message": "Handing off to Vexto…"
+  },
+  "actionHandedOff": {
+    "message": "Handed off to Vexto"
+  },
+  "actionTakenOver": {
+    "message": "Download taken over"
+  },
+  "noLinkHeadline": {
+    "message": "No link found"
+  },
+  "noLinkReason": {
+    "message": "Make sure you right-clicked on a link."
+  },
+  "unsupportedLinkHeadline": {
+    "message": "Unsupported link"
+  },
+  "unsupportedLinkReason": {
+    "message": "Only http/https links can be handed to Vexto."
+  },
+  "extDisabledReason": {
+    "message": "Enable the extension in the Vexto Connect options page and try again."
+  },
+  "noResponseHeadline": {
+    "message": "Vexto did not respond"
+  },
+  "httpStatusHeadline": {
+    "message": "Vexto returned HTTP $STATUS$",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "fellBackHeadline": {
+    "message": "Fell back to the browser download"
+  },
+  "rejectedReasonLong": {
+    "message": "Vexto refused the request: the download engine is disabled or this link type is not supported."
+  },
+  "notTakenReason": {
+    "message": "Vexto did not take over (response: $RESPONSE$).",
+    "placeholders": {
+      "RESPONSE": {
+        "content": "$1"
+      }
+    }
+  },
+  "unparseable": {
+    "message": "unparseable"
+  },
+  "usedBrowserDownload": {
+    "message": "The browser download is used instead."
+  },
+  "browserDownloadNotStarted": {
+    "message": "Browser download not started"
+  },
+  "browserDownloadFailed": {
+    "message": "The browser download could not be started either: $DETAIL$. Copy the link and download it manually.",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1"
+      }
+    }
+  },
+  "noResponseRestored": {
+    "message": "Vexto did not respond; the browser download was resumed"
+  },
+  "secretMismatchRestored": {
+    "message": "Secret key mismatch; the browser download was resumed"
+  },
+  "httpStatusRestored": {
+    "message": "Vexto returned HTTP $STATUS$; the browser download was resumed",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1"
+      }
+    }
+  },
+  "handedOffNotCanceled": {
+    "message": "Handed off to Vexto, but the browser download was not canceled"
+  },
+  "restoredBrowserDownload": {
+    "message": "The browser download was resumed"
+  },
+  "autoTakeoverError": {
+    "message": "Auto takeover failed; the browser download was resumed"
+  },
+  "rejectedReasonShort": {
+    "message": "Vexto refused the request (the download engine is disabled or the link type is unsupported)."
+  },
+  "fileLabel": {
+    "message": "File: $FILE$",
+    "placeholders": {
+      "FILE": {
+        "content": "$1"
+      }
+    }
+  }
+}

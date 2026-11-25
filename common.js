@@ -1,4 +1,4 @@
-// Vexto Connect 共享模块：默认设置、校验、HTTP 请求与中文错误文案。
+// Vexto Connect 共享模块：默认设置、校验、HTTP 请求、界面文案与错误描述。
 // 同时被 service worker（importScripts）和选项页（<script>）加载，不依赖构建。
 
 "use strict";
@@ -11,6 +11,39 @@ const IS_FIREFOX =
 const ext = IS_FIREFOX ? globalThis.browser : globalThis.chrome;
 // Firefox 的 downloads.pause() 会让下载变成 USER_CANCELED 且无法恢复，
 // 因此 Firefox 版跳过暂停，直接交接；失败时浏览器下载继续。
+
+// ── 界面文案 ────────────────────────────────────────────────────────────
+// 浏览器原生 i18n：chrome.i18n 与 browser.i18n 接口一致，文案在 _locales/*/messages.json。
+// 取不到时回退成 key，便于检查脚本和手工排查发现漏译。
+
+function t(key, substitutions) {
+  const text = ext.i18n?.getMessage(key, substitutions);
+  return text || key;
+}
+
+function uiLanguage() {
+  return ext.i18n?.getUILanguage?.() || "en";
+}
+
+function formatTime(date = new Date()) {
+  return date.toLocaleTimeString(uiLanguage(), { hour12: false });
+}
+
+// 填充 data-i18n（textContent）与 data-i18n-attr（形如 "title:key,aria-label:key"）。
+function localizeDocument(root = globalThis.document) {
+  if (!root) return;
+  for (const el of root.querySelectorAll("[data-i18n]")) {
+    el.textContent = t(el.dataset.i18n);
+  }
+  for (const el of root.querySelectorAll("[data-i18n-attr]")) {
+    for (const pair of el.dataset.i18nAttr.split(",")) {
+      const split = pair.indexOf(":");
+      if (split < 0) continue;
+      el.setAttribute(pair.slice(0, split).trim(), t(pair.slice(split + 1).trim()));
+    }
+  }
+  if (root === globalThis.document) root.documentElement.lang = uiLanguage();
+}
 
 const DEFAULT_SITE_RULES = Object.freeze({
   allow: Object.freeze([]),
@@ -144,43 +177,43 @@ function hostnameOf(rawUrl) {
   }
 }
 
-// 表单校验：返回 { ok, errors, settings }。errors 按字段给出中文原因。
+// 表单校验：返回 { ok, errors, settings }。errors 按字段给出本地化原因。
 function validateSettings(input) {
   const errors = {};
   const host = String(input?.host ?? "").trim().toLowerCase();
   if (!host) {
-    errors.host = "请填写主机地址。";
+    errors.host = t("errHostRequired");
   } else if (!LOOPBACK_HOSTS.includes(host)) {
-    errors.host = "只允许本机回环地址：127.0.0.1 或 localhost。";
+    errors.host = t("errHostLoopback");
   }
 
   const portRaw = String(input?.port ?? "").trim();
   const port = Number(portRaw);
   if (!portRaw) {
-    errors.port = "请填写端口。";
+    errors.port = t("errPortRequired");
   } else if (!Number.isInteger(port) || port < 1024 || port > 65535) {
-    errors.port = "端口必须是 1024–65535 之间的整数。";
+    errors.port = t("errPortRange");
   }
 
   const minRaw = String(input?.minimumSizeMb ?? "").trim();
   const minSize = minRaw === "" ? 0 : Number(minRaw);
   if (!Number.isFinite(minSize) || minSize < 0) {
-    errors.minimumSizeMb = "最小文件大小必须是不小于 0 的数字（MB）。";
+    errors.minimumSizeMb = t("errMinSize");
   }
 
   const dupRaw = String(input?.duplicateWindowSeconds ?? "").trim();
   const dupWindow = dupRaw === "" ? 0 : Number(dupRaw);
   if (!Number.isInteger(dupWindow) || dupWindow < 0) {
-    errors.duplicateWindowSeconds = "重复保护窗口必须是不小于 0 的整数（秒）。";
+    errors.duplicateWindowSeconds = t("errDupWindow");
   }
 
   const allow = parseSiteRules(input?.allowSitesText ?? "");
   const block = parseSiteRules(input?.blockSitesText ?? "");
   if (allow.invalid.length) {
-    errors.allowSites = `无法识别的域名：${allow.invalid.slice(0, 3).join("、")}`;
+    errors.allowSites = t("errInvalidDomain", [allow.invalid.slice(0, 3).join(", ")]);
   }
   if (block.invalid.length) {
-    errors.blockSites = `无法识别的域名：${block.invalid.slice(0, 3).join("、")}`;
+    errors.blockSites = t("errInvalidDomain", [block.invalid.slice(0, 3).join(", ")]);
   }
 
   return {
@@ -290,25 +323,25 @@ async function detectV1(settings, timeoutMs = 1500) {
 function describeNetworkError(error, settings, timeoutMs = PROBE_TIMEOUT_MS) {
   const target = `${settings.host}:${settings.port}`;
   if (error && error.name === "AbortError") {
-    return `连接超时：${target} 在 ${Math.round(timeoutMs / 1000)} 秒内没有响应。Vexto 可能卡住，或端口被其他程序占用。`;
+    return t("errTimeout", [target, String(Math.round(timeoutMs / 1000))]);
   }
   if (error instanceof TypeError) {
-    return `无法连接 ${target}：Vexto 未运行，或端口未监听（连接被拒绝）。请确认 Vexto 在托盘运行、插件接管已开启。`;
+    return t("errConnect", [target]);
   }
-  return `请求失败：${error?.message || String(error)}`;
+  return t("errRequestFailed", [error?.message || String(error)]);
 }
 
 function describeHttpError(status) {
   switch (status) {
     case 401:
-      return "密钥不一致（401）：请确认扩展与 Vexto「插件密钥」完全相同；两边都为空也算一致。";
+      return t("http401");
     case 403:
-      return "请求被拒绝（403）：Vexto 不接受该请求来源或客户端标识。";
+      return t("http403");
     case 404:
-      return "接口不存在（404）：端口上的服务可能不是 Vexto，或 Vexto 版本过旧。";
+      return t("http404");
     case 426:
-      return "协议不兼容（426）：请升级 Vexto 或扩展。";
+      return t("http426");
     default:
-      return `Vexto 返回 HTTP ${status}。`;
+      return t("httpGeneric", [String(status)]);
   }
 }

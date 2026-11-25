@@ -157,14 +157,16 @@ button { font-family: inherit; }
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 38px;
-  padding: 0 10px;
+  /* 单一文案行保持 38px；较长的译文（如 es 的「Transferencia automática」）换行时整行变高，不压到下一项。 */
+  min-height: 38px;
+  padding: 8px 10px;
   border: 0;
   border-radius: 9px;
   background: transparent;
   color: var(--muted);
   font-size: 13.5px;
   font-weight: 500;
+  line-height: 1.3;
   text-align: left;
   cursor: pointer;
   transition: background .15s ease, color .15s ease;

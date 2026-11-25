@@ -25,6 +25,8 @@ let settings = null;
 let refreshing = false;
 let timer = null;
 
+localizeDocument();
+
 function setState(kind, label, versionText = "") {
   els.dot.className = `dot ${kind}`;
   els.stateLabel.textContent = label;
@@ -40,7 +42,7 @@ async function loadSettings() {
   settings = normalizeSettings(stored.settings);
   els.autoTakeover.checked = Boolean(settings.autoTakeover);
   els.autoTakeover.disabled = !settings.enabled;
-  els.enabledState.textContent = settings.enabled ? "已启用" : "已停用";
+  els.enabledState.textContent = settings.enabled ? t("extEnabled") : t("extDisabled");
   els.endpoint.textContent = endpointOf(settings);
 }
 
@@ -49,8 +51,8 @@ async function probe(value) {
   if (!value.enabled) {
     return {
       kind: "off",
-      label: "扩展已停用",
-      reason: "在设置中启用后会开始接管下载。",
+      label: t("statusDisabled"),
+      reason: t("popupDisabledReason"),
       endpoint,
     };
   }
@@ -63,7 +65,7 @@ async function probe(value) {
   } catch (error) {
     return {
       kind: "bad",
-      label: "未连接",
+      label: t("statusDisconnected"),
       reason: describeNetworkError(error, value),
       endpoint,
     };
@@ -72,7 +74,7 @@ async function probe(value) {
   if (!pingResponse.ok) {
     return {
       kind: "bad",
-      label: `连接异常（${pingResponse.status}）`,
+      label: t("connError", [String(pingResponse.status)]),
       reason: describeHttpError(pingResponse.status),
       endpoint,
     };
@@ -80,8 +82,8 @@ async function probe(value) {
   if (!ping || typeof ping.version !== "string") {
     return {
       kind: "bad",
-      label: "不是 Vexto",
-      reason: "端口上的服务不是 Vexto：/ping 响应缺少版本字段。",
+      label: t("statusNotVexto"),
+      reason: t("pingMissingVersion"),
       endpoint,
     };
   }
@@ -104,7 +106,7 @@ async function probe(value) {
     if (capabilityResponse.status === 401) {
       return {
         kind: "bad",
-        label: "密钥不一致",
+        label: t("statusSecretMismatch"),
         version: ping.version,
         reason: describeHttpError(401),
         endpoint,
@@ -115,14 +117,14 @@ async function probe(value) {
   }
 
   const v1 = await detectV1(value);
-  const protocol = v1 ? "协议 v1" : "兼容接口";
+  const protocol = t(v1 ? "protocolV1" : "protocolCompat");
 
   if (engine === "running") {
     return {
       kind: "ok",
-      label: "已连接",
+      label: t("statusConnected"),
       version: ping.version,
-      engine: "就绪",
+      engine: t("engineReady"),
       protocol,
       endpoint,
     };
@@ -130,21 +132,21 @@ async function probe(value) {
   if (engine) {
     return {
       kind: "warn",
-      label: "引擎未启用",
+      label: t("statusEngineOff"),
       version: ping.version,
       engine,
       protocol,
-      reason: "Vexto 已连接，但下载引擎未启用；交接会回落到浏览器下载。",
+      reason: t("liveEngineOffReason"),
       endpoint,
     };
   }
   return {
     kind: "warn",
-    label: "已连接",
+    label: t("statusConnected"),
     version: ping.version,
     engine: "—",
     protocol,
-    reason: "已连接 Vexto，但无法读取引擎状态。",
+    reason: t("popupEngineUnknownReason"),
     endpoint,
   };
 }
@@ -155,21 +157,21 @@ function render(result) {
   els.engine.textContent = result.engine || "—";
   els.protocol.textContent = result.protocol || "—";
   els.endpoint.textContent = result.endpoint || "—";
-  els.checked.textContent = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+  els.checked.textContent = formatTime();
 }
 
 async function refresh() {
   if (refreshing) return;
   refreshing = true;
   els.refresh.disabled = true;
-  setState("checking", "检查中…");
+  setState("checking", t("statusChecking"));
   els.reason.textContent = "";
   try {
     await loadSettings();
     const result = await probe(settings);
     render(result);
   } catch (error) {
-    setState("bad", "检查失败");
+    setState("bad", t("checkFailed"));
     els.reason.textContent = String(error?.message || error);
   } finally {
     refreshing = false;
@@ -218,6 +220,6 @@ async function init() {
 }
 
 init().catch((error) => {
-  setState("bad", "检查失败");
+  setState("bad", t("checkFailed"));
   els.reason.textContent = String(error?.message || error);
 });
