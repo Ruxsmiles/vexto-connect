@@ -85,6 +85,10 @@ for (const locale of LOCALES) {
       continue;
     }
     if (!entry.message.trim()) fail(`${locale}/${key}: message 为空。`);
+    if (entry.message !== entry.message.trim()) {
+      // 浏览器会裁掉消息首尾空白，靠它拼接句子会失效
+      fail(`${locale}/${key}: message 首尾不能有空白。`);
+    }
     if (!/^[a-z][A-Za-z0-9]*$/.test(key)) {
       fail(`${locale}/${key}: key 应使用 lowerCamelCase。`);
     }

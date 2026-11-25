@@ -302,7 +302,7 @@ async function reportFailure(headline, reason, fallbackUrl) {
     await ext.action.setTitle({ title: `${DEFAULT_ACTION_TITLE} · ${headline}` });
 
     const fallbackNote = fallbackUrl ? t("usedBrowserDownload") : "";
-    notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, `${reason}${fallbackNote}`);
+    notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, joinSentences(reason, fallbackNote));
   } catch (error) {
     // 状态展示失败也不能影响回落下载
     console.warn("显示失败状态时出错：", error);
@@ -722,7 +722,7 @@ async function reportTakeoverPartial(headline, reason, filename) {
     console.warn("显示接管失败状态失败：", error);
   }
   const fileNote = filename ? t("fileLabel", [filename]) : "";
-  notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, [reason, fileNote].filter(Boolean).join(" "));
+  notify(`${DEFAULT_ACTION_TITLE} · ${headline}`, joinSentences(reason, fileNote));
   clearBadgeSoon();
 }
 

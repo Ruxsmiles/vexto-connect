@@ -426,10 +426,10 @@
     "message": "Settings not saved: fix the highlighted fields."
   },
   "cookieDeniedNotice": {
-    "message": "All-site cookie access was not granted, so cookie forwarding is off; "
+    "message": "All-site cookie access was not granted, so cookie forwarding is off;"
   },
   "downloadUiDeniedNotice": {
-    "message": "Download UI permission was not granted, so hiding the download list is off; "
+    "message": "Download UI permission was not granted, so hiding the download list is off;"
   },
   "otherSettingsSaved": {
     "message": "Other settings were saved."

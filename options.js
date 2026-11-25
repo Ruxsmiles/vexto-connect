@@ -574,7 +574,7 @@ async function saveSettings() {
     refreshSaveState();
     void checkLiveStatus();
     const time = formatTime();
-    const finalNotice = notice ? `${notice}${t("otherSettingsSaved")}` : "";
+    const finalNotice = notice ? joinSentences(notice, t("otherSettingsSaved")) : "";
     setStatus(
       finalNotice || t("savedWithTime", [`${settings.host}:${settings.port}`, time]),
       finalNotice ? "warn" : "ok"

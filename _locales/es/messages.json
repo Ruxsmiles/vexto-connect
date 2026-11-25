@@ -426,10 +426,10 @@
     "message": "Ajustes sin guardar: corrige los campos marcados."
   },
   "cookieDeniedNotice": {
-    "message": "No se concedió acceso a cookies de todos los sitios, así que el reenvío de cookies está desactivado. "
+    "message": "No se concedió acceso a cookies de todos los sitios, así que el reenvío de cookies está desactivado."
   },
   "downloadUiDeniedNotice": {
-    "message": "No se concedió el permiso de interfaz de descargas, así que ocultar la lista está desactivado. "
+    "message": "No se concedió el permiso de interfaz de descargas, así que ocultar la lista está desactivado."
   },
   "otherSettingsSaved": {
     "message": "El resto de los ajustes se ha guardado."

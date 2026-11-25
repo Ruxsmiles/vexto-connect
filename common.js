@@ -29,6 +29,13 @@ function formatTime(date = new Date()) {
   return date.toLocaleTimeString(uiLanguage(), { hour12: false });
 }
 
+// 拼接多句文案：中日韩不用分隔符，其它语言用空格（消息值首尾空白会被浏览器裁掉）。
+function joinSentences(...parts) {
+  const kept = parts.filter(Boolean);
+  if (!kept.length) return "";
+  return kept.join(/^(zh|ja|ko)/i.test(uiLanguage()) ? "" : " ");
+}
+
 // 填充 data-i18n（textContent）与 data-i18n-attr（形如 "title:key,aria-label:key"）。
 function localizeDocument(root = globalThis.document) {
   if (!root) return;
