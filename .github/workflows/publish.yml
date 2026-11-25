@@ -131,6 +131,7 @@ jobs:
             --api-key "$AMO_API_KEY" \
             --api-secret "$AMO_API_SECRET" \
             --artifacts-dir dist/signed \
+            --approval-timeout 0 \
             --no-input
 
   chrome:
