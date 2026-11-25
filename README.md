@@ -216,6 +216,14 @@ node scripts/check-i18n.mjs
 
 临时用别的语言调试：把 `manifest.json` 的 `default_locale` 改成 `zh_CN` / `ja` / `ko` / `es` 后重新加载扩展，或直接把浏览器界面语言切换成目标语言。
 
+### 发布
+
+创建 GitHub Release（tag 与 `manifest.json` 版本一致，例如 `v0.9.0`）后，`.github/workflows/publish.yml` 会自动构建两个包并提交到 Edge Add-ons 与 AMO；配置 Chrome 相关 Secrets 后也会提交到 Chrome Web Store。
+
+需要的 Repository secrets：`EDGE_PRODUCT_ID`、`EDGE_CLIENT_ID`、`EDGE_API_KEY`、`AMO_API_KEY`、`AMO_API_SECRET`；Chrome 可选：`CHROME_ITEM_ID`、`CHROME_CLIENT_ID`、`CHROME_CLIENT_SECRET`、`CHROME_REFRESH_TOKEN`。缺少某个商店的 Secrets 时会跳过该商店。
+
+商店审核通过后，已安装用户由浏览器自动更新；首次上架仍建议先在商店后台手动提交。
+
 
 ## 许可
 

@@ -1,0 +1,172 @@
+name: publish-stores
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: publish-stores-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify manifest version matches release tag
+        if: github.event_name == 'release'
+        shell: pwsh
+        run: |
+          $version = (Get-Content manifest.json -Raw | ConvertFrom-Json).version
+          $tag = "${{ github.event.release.tag_name }}"
+          if ("v$version" -ne $tag) {
+            throw "Tag $tag does not match manifest version $version"
+          }
+
+      - name: Build packages
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/package.ps1
+          pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/package-firefox.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: dist/*.zip
+          if-no-files-found: error
+
+  edge:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist
+
+      # The extension must already be published once manually; this API only
+      # updates an existing submission.
+      - name: Upload and publish to Edge Add-ons
+        if: env.EDGE_API_KEY != '' && env.EDGE_CLIENT_ID != '' && env.EDGE_PRODUCT_ID != ''
+        run: |
+          set -euo pipefail
+          ZIP=$(ls dist/vexto-connect-*.zip | grep -v firefox | head -1)
+          BASE="https://api.addons.microsoftedge.microsoft.com/v1/products/${EDGE_PRODUCT_ID}"
+          AUTH=(-H "Authorization: ApiKey ${EDGE_API_KEY}" -H "X-ClientID: ${EDGE_CLIENT_ID}")
+          HEADERS="$RUNNER_TEMP/edge-headers.txt"
+          BODY="$RUNNER_TEMP/edge-body.json"
+
+          CODE=$(curl -sS -D "$HEADERS" -o "$BODY" -w '%{http_code}' \
+            -X POST "${AUTH[@]}" -H "Content-Type: application/zip" \
+            -T "$ZIP" "$BASE/submissions/draft/package")
+          echo "package upload: HTTP $CODE"
+          if [ "$CODE" != "202" ]; then cat "$BODY"; exit 1; fi
+
+          LOCATION=$(grep -i '^location:' "$HEADERS" | tr -d '\r' | cut -d' ' -f2-)
+          if [[ "$LOCATION" != http* ]]; then
+            LOCATION="https://api.addons.microsoftedge.microsoft.com$LOCATION"
+          fi
+          STATUS=""
+          for _ in $(seq 1 90); do
+            curl -sS "${AUTH[@]}" "$LOCATION" -o "$BODY"
+            STATUS=$(jq -r '.status // empty' "$BODY")
+            echo "package upload status: ${STATUS:-unknown}"
+            [ "$STATUS" = "Succeeded" ] && break
+            [ "$STATUS" = "Failed" ] && { cat "$BODY"; exit 1; }
+            sleep 10
+          done
+          if [ "$STATUS" != "Succeeded" ]; then cat "$BODY"; exit 1; fi
+
+          CODE=$(curl -sS -D "$HEADERS" -o "$BODY" -w '%{http_code}' \
+            -X POST "${AUTH[@]}" -H "Content-Type: application/json" \
+            -d '{"notes":"Automated release from GitHub Actions"}' \
+            "$BASE/submissions")
+          echo "publish: HTTP $CODE"
+          if [ "$CODE" != "202" ]; then cat "$BODY"; exit 1; fi
+
+  firefox:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+      AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # web-ext sign uploads the package and submits it for AMO review.
+      - name: Submit to AMO
+        if: env.AMO_API_KEY != '' && env.AMO_API_SECRET != ''
+        run: |
+          set -euo pipefail
+          rm -rf firefox dist/signed
+          mkdir -p firefox
+          unzip -q dist/vexto-connect-firefox-*.zip -d firefox
+          npx --yes web-ext@8 sign \
+            --source-dir firefox \
+            --channel listed \
+            --api-key "$AMO_API_KEY" \
+            --api-secret "$AMO_API_SECRET" \
+            --artifacts-dir dist/signed \
+            --no-input
+
+  chrome:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      CHROME_ITEM_ID: ${{ secrets.CHROME_ITEM_ID }}
+      CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+      CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+      CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: dist
+
+      # Optional: skip until the Chrome Web Store item and OAuth secrets exist.
+      - name: Upload and publish to Chrome Web Store
+        if: env.CHROME_ITEM_ID != '' && env.CHROME_CLIENT_ID != '' && env.CHROME_CLIENT_SECRET != '' && env.CHROME_REFRESH_TOKEN != ''
+        run: |
+          set -euo pipefail
+          ZIP=$(ls dist/vexto-connect-*.zip | grep -v firefox | head -1)
+
+          TOKEN=$(curl -sSf https://oauth2.googleapis.com/token \
+            -d "client_id=${CHROME_CLIENT_ID}" \
+            -d "client_secret=${CHROME_CLIENT_SECRET}" \
+            -d "refresh_token=${CHROME_REFRESH_TOKEN}" \
+            -d "grant_type=refresh_token" | jq -r '.access_token')
+          test -n "$TOKEN"
+
+          curl -sSf -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "x-goog-api-version: 2" \
+            -H "Content-Type: application/zip" \
+            --data-binary @"$ZIP" \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${CHROME_ITEM_ID}?uploadType=media"
+
+          curl -sSf -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "x-goog-api-version: 2" \
+            -H "Content-Length: 0" \
+            "https://www.googleapis.com/chromewebstore/v1.1/items/${CHROME_ITEM_ID}/publish?publishTarget=default"
