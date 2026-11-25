@@ -76,13 +76,16 @@ jobs:
           echo "package upload: HTTP $CODE"
           if [ "$CODE" != "202" ]; then cat "$BODY"; exit 1; fi
 
-          LOCATION=$(grep -i '^location:' "$HEADERS" | tr -d '\r' | cut -d' ' -f2-)
-          if [[ "$LOCATION" != http* ]]; then
-            LOCATION="https://api.addons.microsoftedge.microsoft.com$LOCATION"
-          fi
+          OP_ID=$(grep -i '^location:' "$HEADERS" | tr -d '\r' | sed 's/^[Ll]ocation:[[:space:]]*//')
+          if [ -z "$OP_ID" ]; then echo "missing Location header"; exit 1; fi
+          case "$OP_ID" in
+            http*) POLL_URL="$OP_ID" ;;
+            /v1/*) POLL_URL="https://api.addons.microsoftedge.microsoft.com$OP_ID" ;;
+            *) POLL_URL="$BASE/submissions/draft/package/operations/$OP_ID" ;;
+          esac
           STATUS=""
           for _ in $(seq 1 90); do
-            curl -sS "${AUTH[@]}" "$LOCATION" -o "$BODY"
+            curl -sS "${AUTH[@]}" "$POLL_URL" -o "$BODY"
             STATUS=$(jq -r '.status // empty' "$BODY")
             echo "package upload status: ${STATUS:-unknown}"
             [ "$STATUS" = "Succeeded" ] && break

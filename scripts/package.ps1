@@ -46,9 +46,16 @@ Copy-Item (Join-Path $root "_locales") (Join-Path $staging "_locales") -Recurse
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::Open($zip, "Create")
 try {
-  Get-ChildItem -Path $staging -Recurse -File | ForEach-Object {
-    $entryName = $_.FullName.Substring($staging.Length + 1).Replace("\", "/")
-    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $entryName) | Out-Null
+  Push-Location -LiteralPath $staging
+  try {
+    Get-ChildItem -Recurse -File -Name | ForEach-Object {
+      $entryName = $_.Replace("\", "/")
+      [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+        $archive, (Join-Path $staging $_), $entryName
+      ) | Out-Null
+    }
+  } finally {
+    Pop-Location
   }
 } finally {
   $archive.Dispose()
