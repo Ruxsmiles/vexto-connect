@@ -227,7 +227,7 @@
     "message": "Transferir"
   },
   "autoHint": {
-    "message": "Guarda para aplicar los cambios; activado por defecto. Si lo usas junto a Rayburst Connect, activa la transferencia automática solo en uno de los dos."
+    "message": "Guarda para aplicar los cambios; activado por defecto. Si hay otra extensión de descargas instalada, activa la transferencia automática solo en una."
   },
   "cardDownloadListTitle": {
     "message": "Lista de descargas"

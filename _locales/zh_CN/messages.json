@@ -227,7 +227,7 @@
     "message": "接管"
   },
   "autoHint": {
-    "message": "修改后需保存生效；默认开启。与 Rayburst Connect 同时使用时，只开一个自动接管。"
+    "message": "修改后需保存生效；默认开启。若同时安装了其它下载接管扩展，只开启其中一个的自动接管。"
   },
   "cardDownloadListTitle": {
     "message": "下载列表"

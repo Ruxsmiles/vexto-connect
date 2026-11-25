@@ -227,7 +227,7 @@
     "message": "Take over"
   },
   "autoHint": {
-    "message": "Save to apply changes; on by default. When used alongside Rayburst Connect, enable auto takeover in only one of them."
+    "message": "Save to apply changes; on by default. If another download-taking extension is installed, enable auto takeover in only one of them."
   },
   "cardDownloadListTitle": {
     "message": "Download list"

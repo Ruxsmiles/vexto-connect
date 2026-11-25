@@ -75,6 +75,8 @@ const DEFAULT_SETTINGS = Object.freeze({
 const SITE_RULE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*$/;
 
 const LOOPBACK_HOSTS = Object.freeze(["127.0.0.1", "localhost"]);
+// 兼容协议的固定请求头与取值：其中的 rayburst 是协议标识而非产品名，
+// 改动会让 Vexto 的兼容层拒绝请求，必须与桌面端保持一致。
 const CLIENT_HEADER = "X-Rayburst-Client";
 const CLIENT_VALUE = "rayburst-connect";
 const VEXTO_CLIENT_VERSION = ext.runtime?.getManifest
