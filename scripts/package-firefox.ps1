@@ -1,4 +1,4 @@
-# Build the Firefox package (event page background, no Chrome-only permissions).
+﻿# Build the Firefox package (event page background, no Chrome-only permissions).
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $PSScriptRoot

@@ -1,6 +1,6 @@
 # Vexto Connect 隐私政策
 
-生效日期：2026-11-23
+生效日期：2026-11-26
 
 Vexto Connect（以下简称「本扩展」）是 Vexto 桌面应用的配套浏览器扩展。本政策说明本扩展如何处理数据。
 
@@ -11,7 +11,7 @@ Vexto Connect（以下简称「本扩展」）是 Vexto 桌面应用的配套浏
 ## 本扩展如何使用数据
 
 - **设置与密钥**：保存在浏览器本地的 `chrome.storage.local`，不会同步到云端，也不会发送给第三方。
-- **网络请求**：本扩展只访问 `http://127.0.0.1` 与 `http://localhost` 上的本机 Vexto 应用，不访问公网。
+- **网络请求**：本扩展只主动访问 `http://127.0.0.1` 与 `http://localhost` 上的本机 Vexto 应用，不访问公网。Firefox 版会通过 `webRequest` 观察 `github.com` 的下载请求，在内存中匹配 GitHub Release 的原始地址，避免把限时签名链接交给 Vexto；该观察不会读取页面内容，也不会把数据发送到本机以外。
 - **Cookie（可选，默认关闭）**：只有用户主动开启「转发 Cookie」后，本扩展才会读取当前下载站点的 Cookie，并发送给本机 Vexto，用于需要登录态的下载。Cookie 不会写入日志，也不会发送到其他地址。
 - **诊断记录**：最近 50 条交接结果保存在浏览器会话存储中，只包含主机与原因码，不包含 URL 查询串、Cookie、密钥或文件名；浏览器会话结束即清空。
 
@@ -22,7 +22,9 @@ Vexto Connect（以下简称「本扩展」）是 Vexto 桌面应用的配套浏
 - `downloads`：暂停、取消或恢复浏览器下载，以便交给 Vexto 或在失败时回落。
 - `notifications`：在下载回落或失败时提示原因。
 - `cookies`：仅在用户开启 Cookie 转发时读取站点 Cookie。
+- `webRequest`（仅 Firefox）：在跳转前识别 GitHub Release 的原始下载地址，仅在内存中匹配，不记录页面内容。
 - `http://127.0.0.1/*`、`http://localhost/*`：访问本机 Vexto API。
+- `*://github.com/*`（仅 Firefox）：配合 `webRequest` 读取 GitHub Release 下载地址。
 - `downloads.ui`（可选）：仅在用户开启「隐藏浏览器下载列表」时申请。
 - `*://*/*`（可选）：仅在用户开启 Cookie 转发时申请，用于读取站点 Cookie。
 

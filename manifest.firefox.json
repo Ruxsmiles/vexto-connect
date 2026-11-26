@@ -9,11 +9,13 @@
     "contextMenus",
     "downloads",
     "notifications",
-    "cookies"
+    "cookies",
+    "webRequest"
   ],
   "host_permissions": [
     "http://127.0.0.1/*",
-    "http://localhost/*"
+    "http://localhost/*",
+    "*://github.com/*"
   ],
   "optional_host_permissions": [
     "*://*/*"

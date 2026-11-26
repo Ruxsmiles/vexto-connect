@@ -1,4 +1,4 @@
-# 打包扩展为可上传的 zip（不依赖 npm / 构建工具）。
+﻿# 打包扩展为可上传的 zip（不依赖 npm / 构建工具）。
 param([string]$OutputName = "")
 $ErrorActionPreference = "Stop"
 

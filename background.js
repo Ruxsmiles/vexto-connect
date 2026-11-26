@@ -192,14 +192,138 @@ ext.notifications.onClicked.addListener(() => {
 
 // ── 手动交接（M1）──────────────────────────────────────────────────────
 
+function filenameFromDisposition(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    for (const key of ["response-content-disposition", "rscd"]) {
+      const value = url.searchParams.get(key);
+      if (!value) continue;
+      const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(value);
+      if (match) return decodeURIComponent(match[1].replace(/"/g, "").trim());
+    }
+  } catch {
+    // 副作用只有文件名兜底失败，交给调用方继续处理。
+  }
+  return "";
+}
+
 function filenameFromUrl(rawUrl) {
   try {
     const url = new URL(rawUrl);
     const segment = url.pathname.split("/").filter(Boolean).pop() || "";
+    const fromQuery = filenameFromDisposition(rawUrl);
+    // GitHub 等签名链接的路径末段是资源 ID，真实文件名在
+    // response-content-disposition / rscd 里。
+    if (fromQuery && (!segment || /^[0-9a-f-]{16,}$/i.test(segment))) return fromQuery;
     return decodeURIComponent(segment);
   } catch {
     return "";
   }
+}
+
+// GitHub Release 资源会先跳到 release-assets.githubusercontent.com 的限时签名
+// 链接。Chromium 的 url 是稳定原始地址、finalUrl 是签名地址；Firefox 两者都只
+// 给签名地址（见下方 webRequest 兜底）。签名地址一小时内过期，而且又长又带签
+// 名，不适合交给 Vexto 排队。
+const TRANSIENT_ASSET_HOSTS = new Set([
+  "release-assets.githubusercontent.com",
+  "objects.githubusercontent.com",
+  "github-releases.githubusercontent.com",
+]);
+
+function isTransientAssetUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    if (TRANSIENT_ASSET_HOSTS.has(url.hostname.toLowerCase())) return true;
+    const hasSignature =
+      url.searchParams.has("jwt") ||
+      url.searchParams.has("sig") ||
+      url.searchParams.has("X-Amz-Signature") ||
+      url.searchParams.has("X-Goog-Signature");
+    const hasExpiry =
+      url.searchParams.has("se") ||
+      url.searchParams.has("Expires") ||
+      url.searchParams.has("X-Amz-Expires");
+    return hasSignature && hasExpiry;
+  } catch {
+    return false;
+  }
+}
+
+function handoffUrl(item) {
+  const original = item.url || "";
+  const final = item.finalUrl || "";
+  const candidate = final || original;
+  if (isTransientAssetUrl(candidate)) {
+    const recovered = recentGitHubReleaseUrl(item, candidate);
+    if (recovered) return recovered;
+  }
+  if (!final) return original;
+  if (
+    isTransientAssetUrl(final) &&
+    /^https?:\/\//i.test(original) &&
+    !isTransientAssetUrl(original)
+  ) {
+    return original;
+  }
+  return final;
+}
+
+// Firefox 的 downloads.onCreated 只给跳转后的签名地址，拿不到 Chromium 那样的
+// 原始 url。这里用 webRequest 在跳转前记下 GitHub Release 的稳定地址，再按文件
+// 名匹配回下载项；监听范围仅限 github.com。
+const GITHUB_RELEASE_PATH_RE =
+  /^\/[^/]+\/[^/]+\/releases\/(?:latest\/)?download\/(?:.+\/)?([^/]+)$/;
+const GITHUB_RELEASE_URL_TTL_MS = 60 * 1000;
+const recentGitHubReleaseUrls = new Map();
+
+function rememberGitHubReleaseUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    if (url.hostname.toLowerCase() !== "github.com") return;
+    const match = GITHUB_RELEASE_PATH_RE.exec(url.pathname);
+    if (!match) return;
+    let filename = match[1];
+    try {
+      filename = decodeURIComponent(filename);
+    } catch {
+      // 保留未解码的文件名，匹配不到时只是回落到签名链接。
+    }
+    recentGitHubReleaseUrls.set(filename, { url: rawUrl, at: Date.now() });
+    if (recentGitHubReleaseUrls.size > 20) {
+      const cutoff = Date.now() - GITHUB_RELEASE_URL_TTL_MS;
+      for (const [key, entry] of recentGitHubReleaseUrls) {
+        if (entry.at < cutoff) recentGitHubReleaseUrls.delete(key);
+      }
+      while (recentGitHubReleaseUrls.size > 20) {
+        recentGitHubReleaseUrls.delete(recentGitHubReleaseUrls.keys().next().value);
+      }
+    }
+  } catch {
+    // 非法 URL 忽略，不影响正常下载
+  }
+}
+
+function recentGitHubReleaseUrl(item, signedUrl) {
+  const filename =
+    filenameFromUrl(signedUrl) ||
+    String(item.filename || "").split(/[\\/]/).pop() ||
+    "";
+  if (!filename) return "";
+  const entry = recentGitHubReleaseUrls.get(filename);
+  if (!entry) return "";
+  if (Date.now() - entry.at > GITHUB_RELEASE_URL_TTL_MS) {
+    recentGitHubReleaseUrls.delete(filename);
+    return "";
+  }
+  return entry.url;
+}
+
+if (IS_FIREFOX && ext.webRequest?.onBeforeRequest) {
+  ext.webRequest.onBeforeRequest.addListener(
+    (details) => rememberGitHubReleaseUrl(details.url),
+    { urls: ["*://github.com/*"] }
+  );
 }
 
 async function handoffLink(linkUrl, referer) {
@@ -353,13 +477,14 @@ ext.downloads.onCreated.addListener((item) => {
 });
 
 function autoTakeOverDecision(item, settings) {
+  const url = handoffUrl(item);
   if (!settings.enabled || !settings.autoTakeover) return "disabled";
-  if (!/^https?:\/\//i.test(item.url || "")) return "non-http";
+  if (!/^https?:\/\//i.test(url)) return "non-http";
   // 扩展自己发起的下载（例如右键失败后的回落）不再接管，避免循环
-  if (item.byExtensionId || isSelfDownload(item.url)) return "self";
+  if (item.byExtensionId || isSelfDownload(url)) return "self";
   if (item.state !== "in_progress" && item.state !== "complete") return "state";
 
-  const hostname = hostnameOf(item.url);
+  const hostname = hostnameOf(url);
   if (!hostname) return "invalid-url";
   if (settings.siteRules.block.some((rule) => matchesSiteRule(hostname, rule))) return "site-block";
   if (
@@ -396,7 +521,7 @@ async function maybeTakeOver(item) {
       addDiagnostic({
         source: "auto",
         outcome: "skipped",
-        host: hostnameOf(item.url),
+        host: hostnameOf(handoffUrl(item)),
         reason: decision,
       });
     }
@@ -432,7 +557,7 @@ async function maybeTakeOver(item) {
         addDiagnostic({
           source: "auto",
           outcome: "skipped",
-          host: hostnameOf(fresh.url),
+          host: hostnameOf(handoffUrl(fresh)),
           reason: freshDecision,
         });
       }
@@ -444,7 +569,7 @@ async function maybeTakeOver(item) {
       addDiagnostic({
         source: "auto",
         outcome: "skipped",
-        host: hostnameOf(fresh.url),
+        host: hostnameOf(handoffUrl(fresh)),
         reason: "duplicate",
       });
       console.info("Vexto Connect：重复下载，跳过接管");
@@ -478,7 +603,7 @@ function markHandled(id) {
 }
 
 async function takeoverPayload(item, settings) {
-  const url = item.finalUrl || item.url;
+  const url = handoffUrl(item);
   const payload = { url, ack: "early" };
   if (settings.forwardHeaders) {
     if (item.referrer) payload.referer = item.referrer;
@@ -496,7 +621,7 @@ async function takeoverPayload(item, settings) {
 }
 
 async function handoffKey(item) {
-  const url = item.finalUrl || item.url;
+  const url = handoffUrl(item);
   const filename = item.filename || filenameFromUrl(url);
   return `${url}|${filename}`;
 }
@@ -546,7 +671,8 @@ async function cookieHeaderFor(url) {
 
 async function beginTakeover(item, settings) {
   markHandled(item.id);
-  const host = hostnameOf(item.finalUrl || item.url);
+  const url = handoffUrl(item);
+  const host = hostnameOf(url);
 
   let settled = false;
   // 安全网：Chrome / Edge 暂停后卡住时必须恢复浏览器下载；Firefox 没有暂停。
@@ -558,7 +684,7 @@ async function beginTakeover(item, settings) {
 
   try {
     await setPending(item.id, {
-      url: item.url,
+      url,
       startedAt: Date.now(),
       stage: IS_FIREFOX ? "handoff" : "paused",
     });

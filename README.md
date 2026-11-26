@@ -6,7 +6,7 @@ Vexto Connect 是 [Vexto](https://github.com/Ruxsmiles/vexto) 的配套浏览器
 
 **项目仓库**：<https://github.com/Ruxsmiles/vexto-connect>
 
-**当前版本**：0.9.0 · Manifest V3 · Edge / Chrome 109+ · Firefox 128+ · GPL-3.0
+**当前版本**：0.9.1 · Manifest V3 · Edge / Chrome 109+ · Firefox 128+ · GPL-3.0
 
 界面支持 English、简体中文、日本語、한국어、Español 五种语言，跟随浏览器界面语言自动切换。
 
@@ -133,7 +133,7 @@ powershell -ExecutionPolicy Bypass -File scripts/package-firefox.ps1
 Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；Vexto 提供 `/v1` 接口后会自动切换。
 ## 隐私与权限
 
-- **只访问本机**：所有网络请求都发往 `http://127.0.0.1` 或 `http://localhost`，不访问公网。
+- **只访问本机**：所有主动网络请求都发往 `http://127.0.0.1` 或 `http://localhost`，不访问公网。Firefox 版额外使用 `webRequest` 观察 `github.com` 的下载请求，仅在内存中匹配原始下载地址，不读取页面内容、不上传数据。
 - **不收集数据**：没有统计、遥测、账号体系或远程上报。
 - **Cookie 默认不转发**：只有用户主动开启后，才会读取当前站点 Cookie 并发送给本机 Vexto；Cookie 与密钥不写入日志。
 - **密钥只存本地**：保存在 `chrome.storage.local`，不使用同步存储。
@@ -151,8 +151,10 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 | `downloads` | 必需 | 暂停、取消、恢复浏览器下载 |
 | `notifications` | 必需 | 回落时提示失败原因 |
 | `cookies` | 必需 | 可选的 Cookie 转发（默认关闭，开启后才读取） |
+| `webRequest` | 必需（仅 Firefox） | 在跳转前识别 GitHub Release 的原始下载地址 |
 | `downloads.ui` | 可选（仅 Chrome / Edge） | 隐藏浏览器下载列表；Firefox 不支持该 API |
 | `http://127.0.0.1/*`、`http://localhost/*` | 必需 | 访问本机 Vexto API |
+| `*://github.com/*` | 必需（仅 Firefox） | 配合 `webRequest` 读取 GitHub Release 下载地址 |
 | `*://*/*` | 可选 | 仅在开启 Cookie 转发时申请，用于读取站点 Cookie |
 
 扩展只申请完成上述功能所需的最小权限；可选权限只在用户主动开启对应功能时申请。
@@ -178,6 +180,7 @@ Vexto 侧需要开启插件接管。当前扩展使用 Vexto 的兼容接口；V
 - Firefox 不支持 `downloads.ui`，选项页会自动隐藏「隐藏浏览器下载列表」。
 - 小文件可能在暂停生效前就下载完成。接管成功时会删除浏览器副本，回落到浏览器时保留文件。
 - 扩展不能启动 Vexto，Vexto 必须保持托盘运行（可开启开机自启）。
+- GitHub Release 资源会以 `github.com/.../releases/download/...` 的稳定地址交给 Vexto，而不是带签名的临时 CDN 链接；私有仓库需要开启 Cookie 转发。
 - 与其它下载接管类扩展同时开启自动接管会重复拦截，请只启用其中一个。
 - 项目处于 0.x 阶段，设置项与行为可能随版本调整。
 
@@ -218,7 +221,7 @@ node scripts/check-i18n.mjs
 
 ### 发布
 
-创建 GitHub Release（tag 与 `manifest.json` 版本一致，例如 `v0.9.0`）后，`.github/workflows/publish.yml` 会自动构建两个包并提交到 Edge Add-ons 与 AMO；配置 Chrome 相关 Secrets 后也会提交到 Chrome Web Store。
+创建 GitHub Release（tag 与 `manifest.json` 版本一致，例如 `v0.9.1`）后，`.github/workflows/publish.yml` 会自动构建三个包（Chrome / Edge / Firefox）并提交到 Edge Add-ons 与 AMO；配置 Chrome 相关 Secrets 后也会提交到 Chrome Web Store。
 
 需要的 Repository secrets：`EDGE_PRODUCT_ID`、`EDGE_CLIENT_ID`、`EDGE_API_KEY`、`AMO_API_KEY`、`AMO_API_SECRET`；Chrome 可选：`CHROME_ITEM_ID`、`CHROME_CLIENT_ID`、`CHROME_CLIENT_SECRET`、`CHROME_REFRESH_TOKEN`。缺少某个商店的 Secrets 时会跳过该商店。
 
