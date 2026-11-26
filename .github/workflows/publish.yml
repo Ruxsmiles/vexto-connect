@@ -4,6 +4,19 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      publish_edge:
+        description: Submit to Edge Add-ons
+        type: boolean
+        default: true
+      publish_firefox:
+        description: Submit to AMO
+        type: boolean
+        default: true
+      publish_chrome:
+        description: Submit to Chrome Web Store
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -59,6 +72,7 @@ jobs:
 
   edge:
     needs: build
+    if: github.event_name == 'release' || inputs.publish_edge
     runs-on: ubuntu-latest
     env:
       EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
@@ -115,6 +129,7 @@ jobs:
 
   firefox:
     needs: build
+    if: github.event_name == 'release' || inputs.publish_firefox
     runs-on: ubuntu-latest
     env:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
@@ -148,6 +163,7 @@ jobs:
 
   chrome:
     needs: build
+    if: github.event_name == 'release' || inputs.publish_chrome
     runs-on: ubuntu-latest
     env:
       CHROME_ITEM_ID: ${{ secrets.CHROME_ITEM_ID }}
